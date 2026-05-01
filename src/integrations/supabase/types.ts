@@ -819,6 +819,7 @@ export type Database = {
           enable_auto_lead_popup: boolean | null
           id: string
           invoice_prefix: string | null
+          marketplace_badge: string | null
           marketplace_enabled: boolean | null
           marketplace_featured: boolean | null
           marketplace_status: string | null
@@ -847,6 +848,7 @@ export type Database = {
           enable_auto_lead_popup?: boolean | null
           id?: string
           invoice_prefix?: string | null
+          marketplace_badge?: string | null
           marketplace_enabled?: boolean | null
           marketplace_featured?: boolean | null
           marketplace_status?: string | null
@@ -875,6 +877,7 @@ export type Database = {
           enable_auto_lead_popup?: boolean | null
           id?: string
           invoice_prefix?: string | null
+          marketplace_badge?: string | null
           marketplace_enabled?: boolean | null
           marketplace_featured?: boolean | null
           marketplace_status?: string | null
@@ -1390,7 +1393,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      dashboard_summary: { Args: never; Returns: Json }
+      dashboard_summary: { Args: { p_user_id?: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1417,6 +1420,7 @@ export type Database = {
         | "emi_document"
         | "other"
         | "delivery_note"
+        | "driving_license"
       emi_status:
         | "pending"
         | "paid"
@@ -1575,6 +1579,7 @@ export const Constants = {
         "emi_document",
         "other",
         "delivery_note",
+        "driving_license",
       ],
       emi_status: [
         "pending",
