@@ -729,15 +729,20 @@ export type Database = {
           created_at: string
           customer_name: string | null
           customer_phone: string | null
+          end_date: string | null
           id: string
+          labor_cost: number | null
           next_service_date: string | null
           notes: string | null
           package_id: string | null
+          parts_cost: number | null
           service_date: string | null
           service_number: string
           service_type: string | null
           services_done: string[] | null
+          start_date: string | null
           status: string | null
+          total_cost: number | null
           updated_at: string
           user_id: string
           vehicle_name: string | null
@@ -748,15 +753,20 @@ export type Database = {
           created_at?: string
           customer_name?: string | null
           customer_phone?: string | null
+          end_date?: string | null
           id?: string
+          labor_cost?: number | null
           next_service_date?: string | null
           notes?: string | null
           package_id?: string | null
+          parts_cost?: number | null
           service_date?: string | null
           service_number: string
           service_type?: string | null
           services_done?: string[] | null
+          start_date?: string | null
           status?: string | null
+          total_cost?: number | null
           updated_at?: string
           user_id: string
           vehicle_name?: string | null
@@ -767,15 +777,20 @@ export type Database = {
           created_at?: string
           customer_name?: string | null
           customer_phone?: string | null
+          end_date?: string | null
           id?: string
+          labor_cost?: number | null
           next_service_date?: string | null
           notes?: string | null
           package_id?: string | null
+          parts_cost?: number | null
           service_date?: string | null
           service_number?: string
           service_type?: string | null
           services_done?: string[] | null
+          start_date?: string | null
           status?: string | null
+          total_cost?: number | null
           updated_at?: string
           user_id?: string
           vehicle_name?: string | null
@@ -803,9 +818,12 @@ export type Database = {
           dealer_phone: string | null
           enable_auto_lead_popup: boolean | null
           id: string
+          invoice_prefix: string | null
           marketplace_enabled: boolean | null
+          public_page_enabled: boolean | null
           public_page_id: string | null
           public_page_theme: string | null
+          purchase_prefix: string | null
           sale_prefix: string | null
           shop_logo_url: string | null
           show_vehicle_page_enquiries: boolean | null
@@ -826,9 +844,12 @@ export type Database = {
           dealer_phone?: string | null
           enable_auto_lead_popup?: boolean | null
           id?: string
+          invoice_prefix?: string | null
           marketplace_enabled?: boolean | null
+          public_page_enabled?: boolean | null
           public_page_id?: string | null
           public_page_theme?: string | null
+          purchase_prefix?: string | null
           sale_prefix?: string | null
           shop_logo_url?: string | null
           show_vehicle_page_enquiries?: boolean | null
@@ -849,9 +870,12 @@ export type Database = {
           dealer_phone?: string | null
           enable_auto_lead_popup?: boolean | null
           id?: string
+          invoice_prefix?: string | null
           marketplace_enabled?: boolean | null
+          public_page_enabled?: boolean | null
           public_page_id?: string | null
           public_page_theme?: string | null
+          purchase_prefix?: string | null
           sale_prefix?: string | null
           shop_logo_url?: string | null
           show_vehicle_page_enquiries?: boolean | null
@@ -996,6 +1020,7 @@ export type Database = {
           exterior_score: number | null
           id: string
           inspection_date: string | null
+          inspector_id: string | null
           interior_score: number | null
           is_certified: boolean | null
           mechanical_score: number | null
@@ -1013,6 +1038,7 @@ export type Database = {
           exterior_score?: number | null
           id?: string
           inspection_date?: string | null
+          inspector_id?: string | null
           interior_score?: number | null
           is_certified?: boolean | null
           mechanical_score?: number | null
@@ -1030,6 +1056,7 @@ export type Database = {
           exterior_score?: number | null
           id?: string
           inspection_date?: string | null
+          inspector_id?: string | null
           interior_score?: number | null
           is_certified?: boolean | null
           mechanical_score?: number | null
@@ -1382,7 +1409,13 @@ export type Database = {
         | "address_proof"
         | "emi_document"
         | "other"
-      emi_status: "pending" | "paid" | "partial" | "overdue" | "waived"
+      emi_status:
+        | "pending"
+        | "paid"
+        | "partial"
+        | "overdue"
+        | "waived"
+        | "partially_paid"
       payment_mode:
         | "cash"
         | "cheque"
@@ -1534,7 +1567,14 @@ export const Constants = {
         "emi_document",
         "other",
       ],
-      emi_status: ["pending", "paid", "partial", "overdue", "waived"],
+      emi_status: [
+        "pending",
+        "paid",
+        "partial",
+        "overdue",
+        "waived",
+        "partially_paid",
+      ],
       payment_mode: [
         "cash",
         "cheque",
