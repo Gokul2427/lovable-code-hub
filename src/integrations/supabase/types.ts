@@ -820,6 +820,8 @@ export type Database = {
           id: string
           invoice_prefix: string | null
           marketplace_enabled: boolean | null
+          marketplace_featured: boolean | null
+          marketplace_status: string | null
           public_page_enabled: boolean | null
           public_page_id: string | null
           public_page_theme: string | null
@@ -846,6 +848,8 @@ export type Database = {
           id?: string
           invoice_prefix?: string | null
           marketplace_enabled?: boolean | null
+          marketplace_featured?: boolean | null
+          marketplace_status?: string | null
           public_page_enabled?: boolean | null
           public_page_id?: string | null
           public_page_theme?: string | null
@@ -872,6 +876,8 @@ export type Database = {
           id?: string
           invoice_prefix?: string | null
           marketplace_enabled?: boolean | null
+          marketplace_featured?: boolean | null
+          marketplace_status?: string | null
           public_page_enabled?: boolean | null
           public_page_id?: string | null
           public_page_theme?: string | null
@@ -1384,6 +1390,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      dashboard_summary: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1409,6 +1416,7 @@ export type Database = {
         | "address_proof"
         | "emi_document"
         | "other"
+        | "delivery_note"
       emi_status:
         | "pending"
         | "paid"
@@ -1566,6 +1574,7 @@ export const Constants = {
         "address_proof",
         "emi_document",
         "other",
+        "delivery_note",
       ],
       emi_status: [
         "pending",
