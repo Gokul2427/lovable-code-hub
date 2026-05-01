@@ -817,6 +817,8 @@ export type Database = {
           dealer_name: string | null
           dealer_phone: string | null
           enable_auto_lead_popup: boolean | null
+          google_reviews_count: number | null
+          google_reviews_rating: number | null
           id: string
           invoice_prefix: string | null
           marketplace_badge: string | null
@@ -846,6 +848,8 @@ export type Database = {
           dealer_name?: string | null
           dealer_phone?: string | null
           enable_auto_lead_popup?: boolean | null
+          google_reviews_count?: number | null
+          google_reviews_rating?: number | null
           id?: string
           invoice_prefix?: string | null
           marketplace_badge?: string | null
@@ -875,6 +879,8 @@ export type Database = {
           dealer_name?: string | null
           dealer_phone?: string | null
           enable_auto_lead_popup?: boolean | null
+          google_reviews_count?: number | null
+          google_reviews_rating?: number | null
           id?: string
           invoice_prefix?: string | null
           marketplace_badge?: string | null
@@ -1421,6 +1427,8 @@ export type Database = {
         | "other"
         | "delivery_note"
         | "driving_license"
+        | "sale_agreement"
+        | "company"
       emi_status:
         | "pending"
         | "paid"
@@ -1580,6 +1588,8 @@ export const Constants = {
         "other",
         "delivery_note",
         "driving_license",
+        "sale_agreement",
+        "company",
       ],
       emi_status: [
         "pending",
