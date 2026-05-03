@@ -63,7 +63,7 @@ const useHubAnalytics = (userId: string | null, period: string) => {
         supabase
           .from("public_page_events")
           .select("event_type, vehicle_id, created_at")
-          .eq("dealer_user_id", userId)
+          .eq("user_id", userId)
           .eq("public_page_id", "marketplace")
           .gte("created_at", startDate.toISOString()),
         supabase
