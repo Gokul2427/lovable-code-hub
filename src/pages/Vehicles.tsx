@@ -436,10 +436,10 @@ if (hasPurchasePayment) {
         reference_type: "vehicle",
         user_id: userId,
         document_name: file.name,
-        document_type: doc.type, // ✅ REAL TAG
+        document_type: doc.type,
         document_url: publicUrl,
-        status: "completed",
-      });
+        status: "active",
+      } as any);
     }
   } catch (error: any) {
     toast({

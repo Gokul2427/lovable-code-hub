@@ -407,7 +407,7 @@ if (selectedSale.is_emi) {
         customer_id: selectedSale.customer_id,
         description: `Payment for sale ${selectedSale.sale_number}`,
         user_id: user.id,
-      })
+      } as any)
       .select()
       .single();
 

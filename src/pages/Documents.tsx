@@ -170,7 +170,7 @@ const Documents = () => {
         document_name: addForm.documentName,
         document_type: addForm.documentType as any,
         document_url: publicUrl,
-        status: "completed" as const,
+        status: "active" as const,
         expiry_date: addForm.expiryDate || null,
       });
       if (error) throw error;

@@ -263,7 +263,7 @@ const PublicPageAnalytics = () => {
     // Vehicle stats
     const vMap: Record<string, VehicleStat> = {};
     vehicles.forEach(v => {
-      vMap[v.id] = { vehicle_id: v.id, brand: v.brand, model: v.model, status: v.status, views: 0, uniqueVisitors: 0, enquiries: 0, ctaClicks: 0, clickRate: 0, conversion: 0 };
+      vMap[v.id] = { vehicle_id: v.id, brand: v.brand, model: v.model, status: v.status as any, views: 0, uniqueVisitors: 0, enquiries: 0, ctaClicks: 0, clickRate: 0, conversion: 0 };
     });
     const visitorMap: Record<string, Set<string>> = {};
     events.forEach(e => {

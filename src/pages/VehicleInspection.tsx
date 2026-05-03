@@ -267,7 +267,7 @@ const VehicleInspection = () => {
       } else {
         await supabase
           .from("vehicle_inspections")
-          .insert(inspectionData);
+          .insert(inspectionData as any);
       }
 
       toast({ title: "Inspection saved successfully!" });
