@@ -87,7 +87,7 @@ const MarketplaceAdmin = () => {
   const checkAdminAccess = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { navigate("/auth"); return; }
-    const { data: adminData } = await supabase.from("marketplace_admins").select("*").eq("user_id", user.id).single();
+    const { data: adminData } = await supabase.from("marketplace_admins").select("*").eq("user_id", user.id).maybeSingle();
     if (!adminData) {
       toast({ title: "Access Denied", description: "You don't have admin privileges", variant: "destructive" });
       navigate("/"); return;

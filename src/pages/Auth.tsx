@@ -50,7 +50,7 @@ const Auth = () => {
           .from("marketplace_admins")
           .select("*")
           .eq("user_id", data.user?.id)
-          .single();
+          .maybeSingle();
 
         if (adminData) {
           // Redirect admin to admin dashboard
