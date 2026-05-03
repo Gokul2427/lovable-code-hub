@@ -193,17 +193,20 @@ export function useDashboardData() {
 
   const COLORS = ['hsl(221, 83%, 53%)', 'hsl(142, 71%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(262, 83%, 58%)', 'hsl(339, 90%, 51%)'];
 
+  const inventoryValue = summary?.inventory_value ?? { in_stock: 0, sold: 0, reserved: 0 };
+  const leadCounts = summary?.lead_counts ?? { total: 0, qualified: 0, won: 0, lost: 0 };
+
   const inventoryValueData = summary ? [
-    { name: "In Stock", value: summary.inventory_value.in_stock, color: COLORS[1] },
-    { name: "Sold", value: summary.inventory_value.sold, color: COLORS[0] },
-    { name: "Reserved", value: summary.inventory_value.reserved, color: COLORS[2] },
+    { name: "In Stock", value: inventoryValue.in_stock ?? 0, color: COLORS[1] },
+    { name: "Sold", value: inventoryValue.sold ?? 0, color: COLORS[0] },
+    { name: "Reserved", value: inventoryValue.reserved ?? 0, color: COLORS[2] },
   ] : [];
 
   const salesFunnelData = summary ? [
-    { name: "Leads", count: summary.lead_counts.total, percent: summary.lead_counts.total > 0 ? 100 : 0, color: COLORS[0] },
-    { name: "Qualified", count: summary.lead_counts.qualified, percent: summary.lead_counts.total > 0 ? Math.round((summary.lead_counts.qualified / summary.lead_counts.total) * 100) : 0, color: COLORS[1] },
-    { name: "Sold", count: summary.lead_counts.won, percent: summary.lead_counts.total > 0 ? Math.round((summary.lead_counts.won / summary.lead_counts.total) * 100) : 0, color: COLORS[2] },
-    { name: "Lost", count: summary.lead_counts.lost, percent: summary.lead_counts.total > 0 ? Math.round((summary.lead_counts.lost / summary.lead_counts.total) * 100) : 0, color: COLORS[4] },
+    { name: "Leads", count: leadCounts.total ?? 0, percent: (leadCounts.total ?? 0) > 0 ? 100 : 0, color: COLORS[0] },
+    { name: "Qualified", count: leadCounts.qualified ?? 0, percent: (leadCounts.total ?? 0) > 0 ? Math.round(((leadCounts.qualified ?? 0) / leadCounts.total) * 100) : 0, color: COLORS[1] },
+    { name: "Sold", count: leadCounts.won ?? 0, percent: (leadCounts.total ?? 0) > 0 ? Math.round(((leadCounts.won ?? 0) / leadCounts.total) * 100) : 0, color: COLORS[2] },
+    { name: "Lost", count: leadCounts.lost ?? 0, percent: (leadCounts.total ?? 0) > 0 ? Math.round(((leadCounts.lost ?? 0) / leadCounts.total) * 100) : 0, color: COLORS[4] },
   ] : [];
 
   return {
