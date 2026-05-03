@@ -192,10 +192,10 @@ const PublicPageAnalytics = () => {
     queryKey: ["catalogue-analytics", dealerUserId, rangeDays],
     queryFn: async () => {
       const [eventsRes, vehiclesRes] = await Promise.all([
-        supabase
-          .from("public_page_events")
+        (supabase
+          .from("public_page_events") as any)
           .select("event_type, session_id, vehicle_id, created_at")
-          .eq("dealer_user_id", dealerUserId!)
+          .eq("user_id", dealerUserId!)
           .neq("public_page_id", "marketplace"),
         supabase
           .from("vehicles")
