@@ -39,7 +39,7 @@ const fetchDashboardDetails = async (userId: string) => {
     supabase.from("customers").select("id, full_name").eq("user_id", userId),
     supabase.from("vehicles").select("id, brand, model, selling_price").eq("user_id", userId),
     supabase.from("vehicle_images").select("vehicle_id, image_url, is_primary").eq("user_id", userId),
-    supabase.from("public_page_events").select("event_type, vehicle_id, public_page_id, created_at").eq("dealer_user_id", userId).gte("created_at", sixMonthsAgo).limit(200),
+    supabase.from("public_page_events").select("event_type, vehicle_id, public_page_id, created_at").eq("user_id", userId).gte("created_at", sixMonthsAgo).limit(200),
   ]);
 
   const payments = paymentsRes.data || [];
