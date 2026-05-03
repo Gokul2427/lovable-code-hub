@@ -1111,7 +1111,7 @@ const fetchDailyPublicAnalytics = async () => {
   const { data } = await supabase
     .from("public_page_events")
     .select("event_type, session_id, vehicle_id")
-    .eq("dealer_user_id", user.id)
+    .eq("user_id", user.id)
     .gte("created_at", start.toISOString())
     .lte("created_at", end.toISOString());
 

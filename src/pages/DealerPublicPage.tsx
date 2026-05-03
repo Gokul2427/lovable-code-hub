@@ -200,7 +200,7 @@ const DealerPublicPage = () => {
 
   const fetchLiveStats = async (dealerUserId: string) => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    const { data } = await supabase.from("public_page_events").select("event_type").eq("dealer_user_id", dealerUserId).gte("created_at", today.toISOString());
+    const { data } = await supabase.from("public_page_events").select("event_type").eq("user_id", dealerUserId).gte("created_at", today.toISOString());
     if (!data) return;
     setLiveStats({ viewsToday: data.filter(e => e.event_type === "page_view").length, enquiriesToday: data.filter(e => e.event_type === "enquiry_submit").length });
   };

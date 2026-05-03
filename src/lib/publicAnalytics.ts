@@ -42,7 +42,7 @@ interface TrackEventParams {
 // Debounce buffer to batch analytics inserts
 let eventBuffer: Array<{
   event_type: string;
-  dealer_user_id: string;
+  user_id: string;
   public_page_id: string;
   vehicle_id: string | null;
   session_id: string;
@@ -74,7 +74,7 @@ export const trackPublicEvent = async ({
 }: TrackEventParams) => {
   eventBuffer.push({
     event_type: eventType,
-    dealer_user_id: dealerUserId,
+    user_id: dealerUserId,
     public_page_id: publicPageId,
     vehicle_id: vehicleId ?? null,
     session_id: getSessionId(),
