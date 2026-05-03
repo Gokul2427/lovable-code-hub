@@ -36,11 +36,11 @@ const MarketplaceAnalytics = () => {
       const prevStartDate = startOfDay(subDays(new Date(), days * 2));
 
       const [{ data: events }, { data: prevEvents }, { count: publicVehiclesCount }] = await Promise.all([
-        supabase.from("public_page_events").select("event_type, vehicle_id, created_at, session_id")
-          .eq("dealer_user_id", userId).eq("public_page_id", "marketplace")
+        (supabase.from("public_page_events") as any).select("event_type, vehicle_id, created_at, session_id")
+          .eq("user_id", userId).eq("public_page_id", "marketplace")
           .gte("created_at", startDate.toISOString()),
-        supabase.from("public_page_events").select("event_type")
-          .eq("dealer_user_id", userId).eq("public_page_id", "marketplace")
+        (supabase.from("public_page_events") as any).select("event_type")
+          .eq("user_id", userId).eq("public_page_id", "marketplace")
           .gte("created_at", prevStartDate.toISOString()).lt("created_at", startDate.toISOString()),
         supabase.from("vehicles").select("id", { count: "exact", head: true })
           .eq("user_id", userId).eq("is_public", true).eq("marketplace_status", "listed"),

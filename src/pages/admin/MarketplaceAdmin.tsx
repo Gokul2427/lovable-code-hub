@@ -244,10 +244,10 @@ const MarketplaceAdmin = () => {
     setSelectedDealer(dealer);
     setDealerInsightsOpen(true);
     const startDate = startOfDay(subDays(new Date(), 30));
-    const { data: events } = await supabase
-      .from("public_page_events")
+    const { data: events } = await (supabase
+      .from("public_page_events") as any)
       .select("*")
-      .eq("dealer_user_id", dealer.user_id)
+      .eq("user_id", dealer.user_id)
       .gte("created_at", startDate.toISOString())
       .limit(5000);
     setDealerEvents(events || []);
