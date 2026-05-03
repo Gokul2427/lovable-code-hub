@@ -14,11 +14,15 @@ serve(async (req) => {
   try {
     const { to, subject, html } = await req.json();
 
+    const port = Number(Deno.env.get("SMTP_PORT") || 587);
+    // Port 465 = implicit TLS, port 587 = STARTTLS
+    const tls = port === 465;
+
     const client = new SMTPClient({
       connection: {
         hostname: Deno.env.get("SMTP_HOST") || "smtp.gmail.com",
-        port: Number(Deno.env.get("SMTP_PORT") || 465),
-        tls: true,
+        port,
+        tls,
         auth: {
           username: Deno.env.get("SMTP_USER") || "",
           password: Deno.env.get("SMTP_PASS") || "",
@@ -27,7 +31,7 @@ serve(async (req) => {
     });
 
     await client.send({
-      from: Deno.env.get("SMTP_FROM") || "",
+      from: Deno.env.get("SMTP_FROM") || Deno.env.get("SMTP_USER") || "",
       to,
       subject,
       content: "auto",
@@ -41,6 +45,7 @@ serve(async (req) => {
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("send-email error:", errorMessage);
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
