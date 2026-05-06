@@ -1,0 +1,22 @@
+{
+  "name": "VahanHub - Vehicle Dealer Management",
+  "short_name": "VahanHub",
+  "description": "India's most trusted vehicle marketplace and dealer management system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
