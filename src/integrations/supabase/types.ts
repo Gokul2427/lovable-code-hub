@@ -816,23 +816,31 @@ export type Database = {
           dealer_gst: string | null
           dealer_name: string | null
           dealer_phone: string | null
+          dealer_tag: string | null
           enable_auto_lead_popup: boolean | null
+          gmap_link: string | null
           google_reviews_count: number | null
           google_reviews_rating: number | null
           id: string
           invoice_prefix: string | null
           marketplace_badge: string | null
+          marketplace_description: string | null
           marketplace_enabled: boolean | null
           marketplace_featured: boolean | null
           marketplace_status: string | null
+          marketplace_tagline: string | null
           public_page_enabled: boolean | null
           public_page_id: string | null
           public_page_theme: string | null
           purchase_prefix: string | null
           sale_prefix: string | null
           shop_logo_url: string | null
+          shop_tagline: string | null
+          show_ratings: boolean | null
+          show_testimonials: boolean | null
           show_vehicle_page_enquiries: boolean | null
           show_vehicle_page_views: boolean | null
+          show_vehicles_sold: boolean | null
           tax_rate: number | null
           updated_at: string
           user_id: string
@@ -847,23 +855,31 @@ export type Database = {
           dealer_gst?: string | null
           dealer_name?: string | null
           dealer_phone?: string | null
+          dealer_tag?: string | null
           enable_auto_lead_popup?: boolean | null
+          gmap_link?: string | null
           google_reviews_count?: number | null
           google_reviews_rating?: number | null
           id?: string
           invoice_prefix?: string | null
           marketplace_badge?: string | null
+          marketplace_description?: string | null
           marketplace_enabled?: boolean | null
           marketplace_featured?: boolean | null
           marketplace_status?: string | null
+          marketplace_tagline?: string | null
           public_page_enabled?: boolean | null
           public_page_id?: string | null
           public_page_theme?: string | null
           purchase_prefix?: string | null
           sale_prefix?: string | null
           shop_logo_url?: string | null
+          shop_tagline?: string | null
+          show_ratings?: boolean | null
+          show_testimonials?: boolean | null
           show_vehicle_page_enquiries?: boolean | null
           show_vehicle_page_views?: boolean | null
+          show_vehicles_sold?: boolean | null
           tax_rate?: number | null
           updated_at?: string
           user_id: string
@@ -878,23 +894,31 @@ export type Database = {
           dealer_gst?: string | null
           dealer_name?: string | null
           dealer_phone?: string | null
+          dealer_tag?: string | null
           enable_auto_lead_popup?: boolean | null
+          gmap_link?: string | null
           google_reviews_count?: number | null
           google_reviews_rating?: number | null
           id?: string
           invoice_prefix?: string | null
           marketplace_badge?: string | null
+          marketplace_description?: string | null
           marketplace_enabled?: boolean | null
           marketplace_featured?: boolean | null
           marketplace_status?: string | null
+          marketplace_tagline?: string | null
           public_page_enabled?: boolean | null
           public_page_id?: string | null
           public_page_theme?: string | null
           purchase_prefix?: string | null
           sale_prefix?: string | null
           shop_logo_url?: string | null
+          shop_tagline?: string | null
+          show_ratings?: boolean | null
+          show_testimonials?: boolean | null
           show_vehicle_page_enquiries?: boolean | null
           show_vehicle_page_views?: boolean | null
+          show_vehicles_sold?: boolean | null
           tax_rate?: number | null
           updated_at?: string
           user_id?: string
