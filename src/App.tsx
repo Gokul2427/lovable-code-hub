@@ -86,7 +86,9 @@ const SuspenseWrap = ({ children, skeleton }: { children: React.ReactNode; skele
 const ProtectedPage = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute>
     <Layout>
-      <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+      {/* No fallback here — each page renders its own skeleton.
+          Avoids the "double loader" (generic chunk loader, then page skeleton). */}
+      <Suspense fallback={null}>{children}</Suspense>
     </Layout>
   </ProtectedRoute>
 );
