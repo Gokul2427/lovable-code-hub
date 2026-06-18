@@ -833,7 +833,7 @@ const visibleCategories = showAllCategories
       <>
         <DialogHeader className="flex flex-row items-center justify-between">
   <DialogTitle>
-    Expense {selectedExpenseDetail.expense_number}
+    Expense {getDisplayNo(selectedExpenseDetail)}
   </DialogTitle>
   <Badge variant="outline" className="capitalize">
     {getCategoryInfo(selectedExpenseDetail.category).icon}{" "}

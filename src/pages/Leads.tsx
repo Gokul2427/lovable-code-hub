@@ -430,7 +430,10 @@ const Leads = () => {
     lost: allLeadsForStats.filter(l => l.status === "lost").length,
   };
 
-  if (loading) return <PageSkeleton />;
+  // Show full page skeleton only on the very first load — not when filters change
+  const [firstLoad, setFirstLoad] = useState(true);
+  useEffect(() => { if (!loading) setFirstLoad(false); }, [loading]);
+  if (firstLoad && loading) return <PageSkeleton />;
 
   const convertLead = async (lead: Lead) => {
     if (isConverting) return;
