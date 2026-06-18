@@ -61,6 +61,7 @@ const MarketplaceAnalytics = lazy(() => import("./pages/MarketplaceAnalytics"));
 const PublicPageAnalytics = lazy(() => import("./pages/PublicPageAnalytics"));
 const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const VehicleInspection = lazy(() => import("./pages/VehicleInspection"));
+const AuditLogs = lazy(() => import("./pages/AuditLogs"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // ─── Query Client ────────────────────────────────────────────────────
@@ -111,6 +112,7 @@ const protectedRoutes = [
   { path: "/alerts", element: <Alerts /> },
   { path: "/settings", element: <Settings /> },
   { path: "/calendar", element: <CalendarPage /> },
+  { path: "/audit-logs", element: <AuditLogs /> },
 ];
 
 const App = () => (

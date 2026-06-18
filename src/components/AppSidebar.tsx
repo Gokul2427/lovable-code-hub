@@ -16,6 +16,7 @@ import {
   CalendarClock,
   Store,
   PieChart,
+  Activity,
 } from "lucide-react";
 
 import { useSidebar } from "@/components/ui/sidebar";
@@ -139,6 +140,7 @@ const managementMenuItems = [
   { title: "Documents", icon: FileText, url: "/documents" },
   { title: "Reports", icon: PieChart, url: "/reports" },
   { title: "Catalogue Analytics", icon: BarChart3, url: "/analytics/public-page" },
+  { title: "Audit Logs", icon: Activity, url: "/audit-logs" },
 ];
 
 export function AppSidebar() {
