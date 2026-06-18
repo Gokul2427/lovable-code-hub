@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          changed_fields: Json | null
+          created_at: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          performed_by: string | null
+          record_id: string
+          table_name: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          changed_fields?: Json | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          performed_by?: string | null
+          record_id: string
+          table_name: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          changed_fields?: Json | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          performed_by?: string | null
+          record_id?: string
+          table_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -278,6 +317,7 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          display_number: string | null
           expense_date: string
           expense_number: string
           id: string
@@ -292,6 +332,7 @@ export type Database = {
           category: string
           created_at?: string
           description: string
+          display_number?: string | null
           expense_date?: string
           expense_number: string
           id?: string
@@ -306,6 +347,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          display_number?: string | null
           expense_date?: string
           expense_number?: string
           id?: string
