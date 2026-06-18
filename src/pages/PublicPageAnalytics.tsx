@@ -385,6 +385,8 @@ const PublicPageAnalytics = () => {
 
   const publicPageUrl = dealerName ? `${window.location.origin}${getCatalogueUrl(dealerName)}` : "";
 
+  const hasData = !!stats && (stats.visitors > 0 || stats.pageViews > 0 || (rawData?.vehicles?.length ?? 0) > 0);
+
   if (loading) return <AnalyticsSkeleton />;
 
   if (!publicEnabled) {
@@ -458,8 +460,37 @@ const PublicPageAnalytics = () => {
         </div>
       </div>
 
+      {/* Empty state when catalogue is enabled but no activity yet */}
+      {!hasData && (
+        <Card className="border-dashed">
+          <CardContent className="py-12 flex flex-col items-center text-center gap-4">
+            <div className="h-14 w-14 rounded-full bg-blue-50 flex items-center justify-center">
+              <BarChart3 className="h-7 w-7 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold">No catalogue activity yet</h3>
+              <p className="text-sm text-muted-foreground max-w-md mt-1">
+                Share your catalogue link with customers. Once visitors start viewing your vehicles,
+                metrics will appear here in real time.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={() => setShowShareModal(true)}>Share Catalogue Link</Button>
+              <Button variant="outline" onClick={() => (window.location.href = "/vehicles")}>
+                Add Vehicles
+              </Button>
+            </div>
+            {publicPageUrl && (
+              <code className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded mt-2">
+                {publicPageUrl}
+              </code>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* KPI Grid - Performance View */}
-      {viewMode === "charts" && stats && (
+      {viewMode === "charts" && stats && hasData && (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
             <StatCard title="Visitors" value={stats.visitors} icon={Users} color="blue" />

@@ -61,6 +61,7 @@ const MarketplaceAnalytics = lazy(() => import("./pages/MarketplaceAnalytics"));
 const PublicPageAnalytics = lazy(() => import("./pages/PublicPageAnalytics"));
 const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const VehicleInspection = lazy(() => import("./pages/VehicleInspection"));
+const AuditLogs = lazy(() => import("./pages/AuditLogs"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // ─── Query Client ────────────────────────────────────────────────────
@@ -85,7 +86,9 @@ const SuspenseWrap = ({ children, skeleton }: { children: React.ReactNode; skele
 const ProtectedPage = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute>
     <Layout>
-      <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+      {/* No fallback here — each page renders its own skeleton.
+          Avoids the "double loader" (generic chunk loader, then page skeleton). */}
+      <Suspense fallback={null}>{children}</Suspense>
     </Layout>
   </ProtectedRoute>
 );
@@ -111,6 +114,7 @@ const protectedRoutes = [
   { path: "/alerts", element: <Alerts /> },
   { path: "/settings", element: <Settings /> },
   { path: "/calendar", element: <CalendarPage /> },
+  { path: "/audit-logs", element: <AuditLogs /> },
 ];
 
 const App = () => (

@@ -103,6 +103,24 @@ const Expenses = () => {
   const isMobile = useIsMobile();
 
   const [dateFilter, setDateFilter] = useState<DateRange | undefined>(undefined);
+  const [pendingDate, setPendingDate] = useState<DateRange | undefined>(undefined);
+  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
+  const [mobileDatePopoverOpen, setMobileDatePopoverOpen] = useState(false);
+  const openDatePopover = (which: "desktop" | "mobile") => {
+    setPendingDate(dateFilter);
+    which === "desktop" ? setDatePopoverOpen(true) : setMobileDatePopoverOpen(true);
+  };
+  const applyPendingDate = () => {
+    setDateFilter(pendingDate);
+    setDatePopoverOpen(false);
+    setMobileDatePopoverOpen(false);
+  };
+  const clearPendingDate = () => {
+    setPendingDate(undefined);
+    setDateFilter(undefined);
+    setDatePopoverOpen(false);
+    setMobileDatePopoverOpen(false);
+  };
 
   const [formData, setFormData] = useState<Partial<ExpenseInsert>>({
     amount: 0,
@@ -113,7 +131,10 @@ const Expenses = () => {
     notes: "",
   });
 
+  // Server generates short display_number via DB trigger (EXP-YYMM-####).
+  // We still send a unique expense_number for backwards compatibility.
   const generateExpenseNumber = () => `EXP${Date.now().toString(36).toUpperCase()}`;
+  const getDisplayNo = (e: any) => e.display_number || e.expense_number;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -266,12 +287,12 @@ toast({ title: "Expense added successfully" });
     queryKey: ['expenses-display', userId, debouncedSearch, categoryFilter, dateFilter?.from?.toISOString(), dateFilter?.to?.toISOString()],
     fetchFn: async ({ from, to }) => {
       let query = supabase.from("expenses")
-        .select("id,expense_number,amount,category,description,expense_date,payment_mode,vehicle_id,notes,created_at,user_id")
+        .select("id,expense_number,display_number,amount,category,description,expense_date,payment_mode,vehicle_id,notes,created_at,user_id")
         .eq("user_id", userId!);
       if (categoryFilter !== "all") query = query.eq("category", categoryFilter);
       if (dateFilter?.from) query = query.gte("expense_date", format(dateFilter.from, 'yyyy-MM-dd'));
       if (dateFilter?.to) query = query.lte("expense_date", format(dateFilter.to, 'yyyy-MM-dd'));
-      if (debouncedSearch) query = query.or(`expense_number.ilike.%${debouncedSearch}%,description.ilike.%${debouncedSearch}%,category.ilike.%${debouncedSearch}%`);
+      if (debouncedSearch) query = query.or(`expense_number.ilike.%${debouncedSearch}%,display_number.ilike.%${debouncedSearch}%,description.ilike.%${debouncedSearch}%,category.ilike.%${debouncedSearch}%`);
       const { data } = await query.order("expense_date", { ascending: false }).range(from, to);
       return (data || []) as Expense[];
     },
@@ -325,7 +346,10 @@ toast({ title: "Expense added successfully" });
     amount: thisMonthExpenses.filter(e => e.category === cat.value).reduce((sum, e) => sum + Number(e.amount), 0),
   })).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount);
 
-  if (loading) {
+  // Show full page skeleton only on the very first load — not when filters change
+  const [firstLoad, setFirstLoad] = useState(true);
+  useEffect(() => { if (!loading) setFirstLoad(false); }, [loading]);
+  if (firstLoad && loading) {
     return <PageSkeleton />;
   }
 
@@ -537,7 +561,7 @@ const visibleCategories = showAllCategories
               {/* Desktop: always show filters */}
               {!isMobile && (
                 <>
-                  <Popover>
+                  <Popover open={datePopoverOpen} onOpenChange={(o) => o ? openDatePopover("desktop") : setDatePopoverOpen(false)}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="gap-2 text-muted-foreground">
                         <CalendarIcon className="h-4 w-4" />
@@ -551,11 +575,12 @@ const visibleCategories = showAllCategories
                     <PopoverContent className="w-auto p-3 z-[100]" align="start">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium">Select date range</span>
-                        {dateFilter?.from && (
-                          <Button variant="ghost" size="sm" onClick={() => setDateFilter(undefined)} className="h-7 px-2 text-xs">Clear</Button>
-                        )}
                       </div>
-                      <DatePickerCalendar mode="range" selected={dateFilter} onSelect={setDateFilter} initialFocus />
+                      <DatePickerCalendar mode="range" selected={pendingDate} onSelect={setPendingDate} initialFocus />
+                      <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t">
+                        <Button variant="ghost" size="sm" onClick={clearPendingDate} className="h-8 px-3 text-xs">Clear</Button>
+                        <Button size="sm" onClick={applyPendingDate} className="h-8 px-4 text-xs">Apply</Button>
+                      </div>
                     </PopoverContent>
                   </Popover>
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -576,7 +601,7 @@ const visibleCategories = showAllCategories
           {/* Mobile expanded filters */}
           {isMobile && showFilters && (
             <div className="flex flex-col gap-2 mt-3 animate-fade-in">
-              <Popover>
+              <Popover open={mobileDatePopoverOpen} onOpenChange={(o) => o ? openDatePopover("mobile") : setMobileDatePopoverOpen(false)}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="gap-2 text-muted-foreground w-full justify-start">
                     <CalendarIcon className="h-4 w-4" />
@@ -590,11 +615,12 @@ const visibleCategories = showAllCategories
                 <PopoverContent className="w-auto p-3 z-[100]" align="start">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Select date range</span>
-                    {dateFilter?.from && (
-                      <Button variant="ghost" size="sm" onClick={() => setDateFilter(undefined)} className="h-7 px-2 text-xs">Clear</Button>
-                    )}
                   </div>
-                  <DatePickerCalendar mode="range" selected={dateFilter} onSelect={setDateFilter} initialFocus />
+                  <DatePickerCalendar mode="range" selected={pendingDate} onSelect={setPendingDate} initialFocus />
+                  <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t">
+                    <Button variant="ghost" size="sm" onClick={clearPendingDate} className="h-8 px-3 text-xs">Clear</Button>
+                    <Button size="sm" onClick={applyPendingDate} className="h-8 px-4 text-xs">Apply</Button>
+                  </div>
                 </PopoverContent>
               </Popover>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -630,7 +656,7 @@ const visibleCategories = showAllCategories
                   const pmColor = PAYMENT_MODE_COLORS[expense.payment_mode] || PAYMENT_MODE_COLORS.cash;
                   return (
                     <TableRow key={expense.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openExpenseDetailDialog(expense)}>
-                      <TableCell className="font-mono text-sm">{expense.expense_number}</TableCell>
+                      <TableCell className="font-mono text-sm">{getDisplayNo(expense)}</TableCell>
                       <TableCell>{format(new Date(expense.expense_date), "dd MMM yyyy")}</TableCell>
                       <TableCell>
                         <Badge className={`gap-1 border-0 ${catColor.bg} ${catColor.text}`}>
@@ -675,7 +701,7 @@ const visibleCategories = showAllCategories
                         {expense.payment_mode.replace("_", " ")}
                       </Badge>
                     </div>
-                    <p className="font-mono text-[10px] sm:text-xs text-muted-foreground">{expense.expense_number}</p>
+                    <p className="font-mono text-[10px] sm:text-xs text-muted-foreground">{getDisplayNo(expense)}</p>
                   </CardContent>
                 </Card>
               );
@@ -827,7 +853,7 @@ const visibleCategories = showAllCategories
       <>
         <DialogHeader className="flex flex-row items-center justify-between">
   <DialogTitle>
-    Expense {selectedExpenseDetail.expense_number}
+    Expense {getDisplayNo(selectedExpenseDetail)}
   </DialogTitle>
   <Badge variant="outline" className="capitalize">
     {getCategoryInfo(selectedExpenseDetail.category).icon}{" "}

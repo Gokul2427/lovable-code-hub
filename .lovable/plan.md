@@ -1,54 +1,79 @@
 
+## Mega-pass plan — 3 batches
 
-## Issues Identified
+I'll execute one batch per turn so each piece is verified. You don't need to approve in between — once you approve this plan, I'll just go.
 
-### 1. Excessive DB calls on every page visit
-**Root cause**: `refetchOnMount: "always"` in the global QueryClient config (line 73 of `App.tsx`). This forces every query to re-fetch on mount regardless of `staleTime`, defeating the 5-minute cache. Every time a user navigates to Dashboard, Vehicles, Customers, etc., all queries fire again.
+---
 
-**Fix**: Change `refetchOnMount: "always"` to `refetchOnMount: true` (default). With `staleTime: 5 * 60 * 1000` already set, queries will only refetch if data is older than 5 minutes.
+### Batch 1 — Database, storage & shared infrastructure
 
-### 2. Marketplace "No vehicles found" for public/anonymous users
-**Root cause**: The `AllVehicles.tsx` query fetches vehicles with `.in("user_id", dealerIds)` but does NOT filter by `is_public = true`. The RLS policy on `vehicles` only allows anonymous users to see rows where `is_public = true`. Since the query doesn't include this filter, Supabase returns empty results for unauthenticated users.
+**Audit log module (new)**
+- New table `public.audit_logs` with: user_id, table_name, record_id, action (INSERT/UPDATE/DELETE), changed_fields (jsonb diff), old_data, new_data, performed_by, ip_address, created_at.
+- Generic trigger function `public.log_audit_event()` attached to every business table: vehicles, customers, vendors, leads, sales, purchases, payments, expenses, vehicle_purchases, emi_schedules, settings, documents, service_records.
+- RLS: each user reads only their own audit rows.
+- New page `/audit-logs` with filters (table, action, date) + record-level diff view; sidebar entry added.
 
-Similarly, the `vehicle_images` query needs vehicles with `is_public = true` to be visible (RLS checks the parent vehicle's `is_public` flag).
+**Storage buckets**
+- Public bucket `vehicle-media` (images already exist as `vehicle-images`; we'll add a complementary `vehicle-media` for videos/larger media that the user mentioned).
+- Private bucket `dealer-documents` for general document storage.
+- RLS policies for both: authenticated users CRUD only their own `{user_id}/...` path.
+- Verify the existing `vehicle-images` and `documents` buckets remain intact.
 
-**Fix**: Add `.eq("is_public", true)` to the vehicles query in `AllVehicles.tsx` (and similar marketplace pages like `Marketplace.tsx`, `MarketplaceDealer.tsx`).
+**Catalogue Analytics blank-fix**
+- Currently the page returns the "Analytics Unavailable" card whenever `public_page_enabled` is false but only after a brief render of the tabs (causing the blank state in screenshot). Fix:
+  - Show the unavailable card inline below the tabs instead of an empty body.
+  - When enabled but `events.length === 0`, show an empty-state with "No visitors yet" + share-link CTA instead of nothing.
 
-### 3. Reports.tsx still uses setState pattern with side-effects inside useQuery
-The `fetchReportData()` function sets 15+ state variables via `useState` and is wrapped in `useQuery` only as a trigger. This means React Query caches `null` while the actual data lives in component state -- losing cache benefits on re-mount.
+---
 
-**Fix (lightweight)**: Keep the current pattern but ensure the global `refetchOnMount` fix prevents unnecessary re-fetches. The `staleTime: 2min` on Reports queries will now actually work.
+### Batch 2 — Shared UX fixes across the dealer interface
 
-### 4. Dashboard fetches ALL payments, leads, events without limits
-`fetchDashboardDetails` fetches all payments and all events for the user with no date filter or limit. For dealers with 1000+ records, this is wasteful.
+**Topbar fixed on scroll**
+- `Layout.tsx` header already has `sticky top-0 z-[60]`. Issue is the `<main>` is the scroll container and on mobile the body scrolls too. Convert to a fixed grid: header `position: fixed` with `top:0; left: sidebar-width; right:0`, main offset by `pt-14`. Tested on mobile + desktop.
 
-**Fix**: Add date filters (last 6 months for payments/events since that's what the cash flow chart shows) and `.limit()` where appropriate.
+**Double-loader fix**
+- Today every protected route mounts `<Suspense fallback={<PageSkeleton/>}>` and then each page also renders its own `<PageSkeleton/>` while data loads. Result: skeleton flash twice.
+- Fix: pass a `null` fallback to the route-level Suspense for pages that own their skeleton (Leads, Expenses, Vehicles, Customers, Vendors, Sales, Purchases, Payments, EMI, Documents, Reports, PublicPageAnalytics). Only Dashboard / Settings keep the route skeleton.
 
-## Implementation Plan
+**"Apply" pattern for date range + filters (Leads + Expenses + every list page with filters)**
+- Build a small shared `<FilterPopover>` component: holds draft filter state inside the popover; only commits to parent (and triggers refetch) when "Apply" is clicked. "Clear" resets draft.
+- Wire into Leads (date + search + status/city/source) and Expenses (date range + category). Also apply to Vehicles, Customers, Vendors, Sales, Purchases, Payments where filters exist.
+- Search input: debounce stays but typing in the box no longer triggers a refetch — only Enter or "Apply" / clicking a suggestion does.
 
-### Step 1: Fix global QueryClient config
-- File: `src/App.tsx`
-- Change `refetchOnMount: "always"` to `refetchOnMount: true`
-- This single change eliminates redundant DB calls across ALL pages
+**Scoped reloads (no full-page skeleton on filter change)**
+- Stats cards (`leads-stats`, `expenses-stats`) and the "this month by category" widgets keep their own queryKey **without** filter dependencies — so they don't refetch when the user changes category/date.
+- Only the table query (`leads-display`, `expenses-display`) reacts to filters. The table area shows a subtle row-shimmer (not the whole-page skeleton).
 
-### Step 2: Fix marketplace vehicle visibility for public users
-- File: `src/pages/marketplace/AllVehicles.tsx`
-- Add `.eq("is_public", true)` to the vehicles query
-- This aligns with the RLS policy that only exposes public vehicles to anonymous users
+**Short expense IDs**
+- Replace `EXP${Date.now().toString(36).toUpperCase()}` (12+ chars) with `EXP-YYMM-####` using a sequential per-user counter via an `expense_seq` per user_id (stored as setting or generated from `count(*) over user`).
+- Migration adds `display_number` column populated from existing `expense_number`. UI shows `display_number`.
 
-### Step 3: Optimize Dashboard detail queries
-- File: `src/services/api/dashboard.ts`
-- Add 6-month date filter to payments and events queries
-- Add `.limit(200)` to events query as a safety cap
-- Reduces payload for dealers with large datasets
+---
 
-### Step 4: Add staleTime to service hooks missing it
-- Files: `src/services/api/customers.ts`, `src/services/api/expenses.ts`, `src/services/api/vehicles.ts`
-- These hooks have no `staleTime` set (they inherit the 5min global default, which is fine, but were being defeated by `refetchOnMount: "always"`)
-- After the Step 1 fix, these will automatically benefit
+### Batch 3 — Feature additions
 
-### Technical Details
-- The `refetchOnMount: "always"` setting was the primary architectural flaw, causing O(n) DB calls per navigation where n = number of queries on the page
-- The marketplace RLS issue is a data isolation problem: vehicles table requires `is_public = true` for anonymous SELECT, but the frontend query didn't include this filter
-- No migration needed; all fixes are frontend-only
+**Follow-up side panel from topbar**
+- New `<FollowUpIcon>` in `Layout.tsx` header (between bell and settings).
+- Click opens a `Sheet side="right"` (shadcn) — full height, w-96 on desktop, full-width on mobile.
+- Lists all leads with `follow_up_date` from today + earlier (overdue at top in red), grouped by Today / Overdue / Upcoming.
+- Each row: checkbox (mark done → adds note + sets `last_contact_date = now()`, clears `follow_up_date`), expandable note input, status badge.
+- Real-time via Supabase realtime channel on `leads` table.
 
+**EMI Calculator redesign**
+- New `EMICalculatorDialog`: empty inputs (no prefill), labeled groups (Loan Details / Tenure / Result), live updating result card with breakdown bar (principal vs interest split), monthly EMI in big numeric, IST currency.
+- Sliders alongside inputs for price/tenure/rate.
+- Reset button. "Looks like a banker built it" aesthetic — clean dividers, muted palette.
+
+---
+
+### Out of scope (call out)
+- I'm NOT touching every field of every form across every module again — that was already covered in earlier turns (Settings columns fix). If you find a *specific* field that still won't save, tell me the module + field and I'll patch it.
+- I'm NOT redesigning Leads/Expenses tables — only their filter/loading UX.
+
+### Technical notes
+- Audit log diff function uses `jsonb_each` to compute changed fields, ignoring `updated_at`.
+- Filter popover uses uncontrolled drafts via local state + `useEffect` to sync when opened.
+- Storage buckets created via `supabase--storage_create_bucket`, not SQL.
+- Topbar `position: fixed` requires `<main>` to get `pt-14 md:pt-14` and the sidebar to also account for it.
+
+After you approve, I'll start Batch 1 (DB migration + buckets + analytics blank-fix) immediately.
