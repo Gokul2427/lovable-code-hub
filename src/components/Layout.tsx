@@ -3,12 +3,13 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Wifi, WifiOff, Info, LayoutDashboard, Car, ShoppingCart, Receipt, BarChart3, Settings, Menu, UserPlus, CreditCard, ReceiptText, CalendarClock, FileText, Bell, LogOut, UsersRound, UserCircle, Store } from "lucide-react";
-import { Calculator, StickyNote } from "lucide-react";
+import { Wifi, WifiOff, Info, LayoutDashboard, Car, ShoppingCart, Receipt, BarChart3, Settings, Menu, UserPlus, CreditCard, ReceiptText, CalendarClock, FileText, Bell, LogOut, UsersRound, UserCircle, Store, Activity } from "lucide-react";
+import { Calculator, StickyNote, CalendarCheck } from "lucide-react";
 import EMICalculatorDialog from "@/components/EMICalculatorDialog";
 import ScrollToTopButton from "@/components/ScrollToTopButton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import StickyNotesPanel from "@/components/StickyNotesPanel";
+import FollowUpPanel from "@/components/FollowUpPanel";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import GlobalSearch from "@/components/layout/GlobalSearch";
 import TopBarUserMenu from "@/components/layout/TopBarUserMenu";
@@ -50,6 +51,7 @@ const Layout = ({ children }: LayoutProps) => {
   const [infoOpen, setInfoOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [emiCalcOpen, setEmiCalcOpen] = useState(false);
+  const [followUpOpen, setFollowUpOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Apply saved theme — no DB call needed
@@ -92,6 +94,7 @@ const Layout = ({ children }: LayoutProps) => {
     { title: "Documents", icon: FileText, url: "/documents" },
     { title: "Reports", icon: BarChart3, url: "/reports" },
     { title: "Catalogue Analytics", icon: BarChart3, url: "/analytics/public-page" },
+    { title: "Audit Logs", icon: Activity, url: "/audit-logs" },
     { title: "Marketplace Hub", icon: Store, url: "/marketplace-hub" },
     { title: "Alerts", icon: Bell, url: "/alerts" },
     { title: "Settings", icon: Settings, url: "/settings" },
@@ -101,13 +104,14 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background pb-16 md:pb-0 overflow-x-hidden">
+      <div className="h-screen flex w-full bg-background overflow-hidden">
         <div className="hidden md:block">
           <AppSidebar />
         </div>
 
-        <div className="flex-1 flex flex-col w-full min-w-0 overflow-x-hidden max-w-full">
-          <header className="h-14 border-b border-border bg-card flex items-center px-2 sm:px-4 md:px-6 sticky top-0 z-[60] shadow-sm min-w-0 overflow-x-hidden">
+        <div className="flex-1 flex flex-col w-full min-w-0 h-full overflow-hidden">
+          <header className="h-14 border-b border-border bg-card/95 backdrop-blur-md flex items-center px-2 sm:px-4 md:px-6 z-[60] shadow-sm shrink-0 min-w-0 overflow-x-hidden">
+
             {!isOnline && (
               <div className="absolute top-14 left-0 right-0 bg-destructive/10 border-b border-destructive/20 text-destructive px-4 py-2 text-sm flex items-center gap-2">
                 <WifiOff className="h-4 w-4" />
@@ -132,6 +136,9 @@ const Layout = ({ children }: LayoutProps) => {
 
             <div className="hidden sm:flex items-center gap-0.5 mx-1 md:mx-2 border-l border-r border-border px-1.5 md:px-3 shrink-0">
               <TopBarCalendar />
+              <button onClick={() => setFollowUpOpen(true)} className="p-1.5 md:p-2 rounded-lg hover:bg-muted transition-colors" title="Follow-ups">
+                <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+              </button>
               <button onClick={() => setNotesOpen(true)} className="p-1.5 md:p-2 rounded-lg hover:bg-muted transition-colors" title="Sticky Notes">
                 <StickyNote className="h-4 w-4 text-muted-foreground" />
               </button>
@@ -156,7 +163,7 @@ const Layout = ({ children }: LayoutProps) => {
             </div>
           </header>
 
-          <main className="flex-1 p-4 sm:p-6 overflow-x-hidden overflow-y-auto transition-[opacity] duration-200 scrollbar-hide bg-muted/30">
+          <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-6 overflow-x-hidden overflow-y-auto transition-[opacity] duration-200 scrollbar-hide bg-muted/30 min-h-0">
             <div className="max-w-[1920px] mx-auto">
               {children}
             </div>
@@ -243,6 +250,7 @@ const Layout = ({ children }: LayoutProps) => {
       </Dialog>
 
       <StickyNotesPanel open={notesOpen} onOpenChange={setNotesOpen} />
+      <FollowUpPanel open={followUpOpen} onOpenChange={setFollowUpOpen} />
       <EMICalculatorDialog open={emiCalcOpen} onOpenChange={setEmiCalcOpen} />
       <ScrollToTopButton />
     </SidebarProvider>
