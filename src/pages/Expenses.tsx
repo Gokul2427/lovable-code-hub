@@ -113,7 +113,10 @@ const Expenses = () => {
     notes: "",
   });
 
+  // Server generates short display_number via DB trigger (EXP-YYMM-####).
+  // We still send a unique expense_number for backwards compatibility.
   const generateExpenseNumber = () => `EXP${Date.now().toString(36).toUpperCase()}`;
+  const getDisplayNo = (e: any) => e.display_number || e.expense_number;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -266,12 +269,12 @@ toast({ title: "Expense added successfully" });
     queryKey: ['expenses-display', userId, debouncedSearch, categoryFilter, dateFilter?.from?.toISOString(), dateFilter?.to?.toISOString()],
     fetchFn: async ({ from, to }) => {
       let query = supabase.from("expenses")
-        .select("id,expense_number,amount,category,description,expense_date,payment_mode,vehicle_id,notes,created_at,user_id")
+        .select("id,expense_number,display_number,amount,category,description,expense_date,payment_mode,vehicle_id,notes,created_at,user_id")
         .eq("user_id", userId!);
       if (categoryFilter !== "all") query = query.eq("category", categoryFilter);
       if (dateFilter?.from) query = query.gte("expense_date", format(dateFilter.from, 'yyyy-MM-dd'));
       if (dateFilter?.to) query = query.lte("expense_date", format(dateFilter.to, 'yyyy-MM-dd'));
-      if (debouncedSearch) query = query.or(`expense_number.ilike.%${debouncedSearch}%,description.ilike.%${debouncedSearch}%,category.ilike.%${debouncedSearch}%`);
+      if (debouncedSearch) query = query.or(`expense_number.ilike.%${debouncedSearch}%,display_number.ilike.%${debouncedSearch}%,description.ilike.%${debouncedSearch}%,category.ilike.%${debouncedSearch}%`);
       const { data } = await query.order("expense_date", { ascending: false }).range(from, to);
       return (data || []) as Expense[];
     },
@@ -325,7 +328,10 @@ toast({ title: "Expense added successfully" });
     amount: thisMonthExpenses.filter(e => e.category === cat.value).reduce((sum, e) => sum + Number(e.amount), 0),
   })).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount);
 
-  if (loading) {
+  // Show full page skeleton only on the very first load — not when filters change
+  const [firstLoad, setFirstLoad] = useState(true);
+  useEffect(() => { if (!loading) setFirstLoad(false); }, [loading]);
+  if (firstLoad && loading) {
     return <PageSkeleton />;
   }
 
@@ -630,7 +636,7 @@ const visibleCategories = showAllCategories
                   const pmColor = PAYMENT_MODE_COLORS[expense.payment_mode] || PAYMENT_MODE_COLORS.cash;
                   return (
                     <TableRow key={expense.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openExpenseDetailDialog(expense)}>
-                      <TableCell className="font-mono text-sm">{expense.expense_number}</TableCell>
+                      <TableCell className="font-mono text-sm">{getDisplayNo(expense)}</TableCell>
                       <TableCell>{format(new Date(expense.expense_date), "dd MMM yyyy")}</TableCell>
                       <TableCell>
                         <Badge className={`gap-1 border-0 ${catColor.bg} ${catColor.text}`}>
@@ -675,7 +681,7 @@ const visibleCategories = showAllCategories
                         {expense.payment_mode.replace("_", " ")}
                       </Badge>
                     </div>
-                    <p className="font-mono text-[10px] sm:text-xs text-muted-foreground">{expense.expense_number}</p>
+                    <p className="font-mono text-[10px] sm:text-xs text-muted-foreground">{getDisplayNo(expense)}</p>
                   </CardContent>
                 </Card>
               );
