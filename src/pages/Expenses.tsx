@@ -103,6 +103,24 @@ const Expenses = () => {
   const isMobile = useIsMobile();
 
   const [dateFilter, setDateFilter] = useState<DateRange | undefined>(undefined);
+  const [pendingDate, setPendingDate] = useState<DateRange | undefined>(undefined);
+  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
+  const [mobileDatePopoverOpen, setMobileDatePopoverOpen] = useState(false);
+  const openDatePopover = (which: "desktop" | "mobile") => {
+    setPendingDate(dateFilter);
+    which === "desktop" ? setDatePopoverOpen(true) : setMobileDatePopoverOpen(true);
+  };
+  const applyPendingDate = () => {
+    setDateFilter(pendingDate);
+    setDatePopoverOpen(false);
+    setMobileDatePopoverOpen(false);
+  };
+  const clearPendingDate = () => {
+    setPendingDate(undefined);
+    setDateFilter(undefined);
+    setDatePopoverOpen(false);
+    setMobileDatePopoverOpen(false);
+  };
 
   const [formData, setFormData] = useState<Partial<ExpenseInsert>>({
     amount: 0,
@@ -543,7 +561,7 @@ const visibleCategories = showAllCategories
               {/* Desktop: always show filters */}
               {!isMobile && (
                 <>
-                  <Popover>
+                  <Popover open={datePopoverOpen} onOpenChange={(o) => o ? openDatePopover("desktop") : setDatePopoverOpen(false)}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="gap-2 text-muted-foreground">
                         <CalendarIcon className="h-4 w-4" />
@@ -557,11 +575,12 @@ const visibleCategories = showAllCategories
                     <PopoverContent className="w-auto p-3 z-[100]" align="start">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium">Select date range</span>
-                        {dateFilter?.from && (
-                          <Button variant="ghost" size="sm" onClick={() => setDateFilter(undefined)} className="h-7 px-2 text-xs">Clear</Button>
-                        )}
                       </div>
-                      <DatePickerCalendar mode="range" selected={dateFilter} onSelect={setDateFilter} initialFocus />
+                      <DatePickerCalendar mode="range" selected={pendingDate} onSelect={setPendingDate} initialFocus />
+                      <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t">
+                        <Button variant="ghost" size="sm" onClick={clearPendingDate} className="h-8 px-3 text-xs">Clear</Button>
+                        <Button size="sm" onClick={applyPendingDate} className="h-8 px-4 text-xs">Apply</Button>
+                      </div>
                     </PopoverContent>
                   </Popover>
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -582,7 +601,7 @@ const visibleCategories = showAllCategories
           {/* Mobile expanded filters */}
           {isMobile && showFilters && (
             <div className="flex flex-col gap-2 mt-3 animate-fade-in">
-              <Popover>
+              <Popover open={mobileDatePopoverOpen} onOpenChange={(o) => o ? openDatePopover("mobile") : setMobileDatePopoverOpen(false)}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="gap-2 text-muted-foreground w-full justify-start">
                     <CalendarIcon className="h-4 w-4" />
@@ -596,11 +615,12 @@ const visibleCategories = showAllCategories
                 <PopoverContent className="w-auto p-3 z-[100]" align="start">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Select date range</span>
-                    {dateFilter?.from && (
-                      <Button variant="ghost" size="sm" onClick={() => setDateFilter(undefined)} className="h-7 px-2 text-xs">Clear</Button>
-                    )}
                   </div>
-                  <DatePickerCalendar mode="range" selected={dateFilter} onSelect={setDateFilter} initialFocus />
+                  <DatePickerCalendar mode="range" selected={pendingDate} onSelect={setPendingDate} initialFocus />
+                  <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t">
+                    <Button variant="ghost" size="sm" onClick={clearPendingDate} className="h-8 px-3 text-xs">Clear</Button>
+                    <Button size="sm" onClick={applyPendingDate} className="h-8 px-4 text-xs">Apply</Button>
+                  </div>
                 </PopoverContent>
               </Popover>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
