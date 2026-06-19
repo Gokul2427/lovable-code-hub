@@ -422,13 +422,13 @@ if (hasPurchasePayment) {
       const fileName = `${vehicleId}/${Date.now()}_${file.name}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("vehicle-documents")
+        .from("documents")
         .upload(fileName, file, { upsert: false });
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from("vehicle-documents")
+        .from("documents")
         .getPublicUrl(fileName);
 
       await supabase.from("documents").insert({
