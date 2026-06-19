@@ -158,10 +158,10 @@ const Documents = () => {
     try {
       const refId = addForm.vehicleId || "general";
       const fileName = `${refId}/${Date.now()}_${selectedFile.name}`;
-      const { error: uploadError } = await supabase.storage.from("vehicle-documents").upload(fileName, selectedFile);
+      const { error: uploadError } = await supabase.storage.from("documents").upload(fileName, selectedFile);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from("vehicle-documents").getPublicUrl(fileName);
+      const { data: { publicUrl } } = supabase.storage.from("documents").getPublicUrl(fileName);
 
       const { error } = await supabase.from("documents").insert({
         reference_id: addForm.vehicleId || user.id,
