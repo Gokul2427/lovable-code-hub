@@ -607,48 +607,48 @@ const Leads = () => {
       <Card className="border border-border">
         <CardHeader>
           <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <CardTitle>All Leads ({leads.length}{hasMore ? "+" : ""})</CardTitle>
-              <div className="flex items-center gap-2">
-                {isMobile && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setFiltersOpen(!filtersOpen)}
-                    className="relative"
-                  >
-                    <Filter className="h-4 w-4" />
-                    {activeFilterCount > 0 && (
-                      <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">
-                        {activeFilterCount}
-                      </span>
-                    )}
-                  </Button>
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="shrink-0">All Leads ({leads.length}{hasMore ? "+" : ""})</CardTitle>
+            </div>
+
+            {/* Search + Filter + ViewToggle — single row on all screens */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search leads..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setFiltersOpen(!filtersOpen)}
+                className="relative shrink-0"
+              >
+                <Filter className="h-4 w-4" />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
                 )}
+              </Button>
+              <div className="shrink-0">
                 <ViewToggle viewMode={viewMode} onViewChange={setViewMode} />
               </div>
             </div>
 
-            {/* Search bar always visible */}
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search leads..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
-            </div>
-
-            {/* Desktop: always show filters. Mobile: collapsible */}
-            {isMobile ? (
-              filtersOpen && (
-                <div className="grid grid-cols-2 gap-2 animate-fade-in">
-                  {filterControls}
-                </div>
-              )
-            ) : (
-              <div className="flex items-center gap-2 flex-wrap">
+            {/* Filters collapse below (both mobile & desktop) when opened */}
+            {filtersOpen && (
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 animate-fade-in">
                 {filterControls}
               </div>
             )}
           </div>
         </CardHeader>
+
         <CardContent>
           {viewMode === "list" ? (
             <div className="overflow-x-auto">
