@@ -59,6 +59,7 @@ export type Database = {
           code: string
           converted_from_lead: boolean | null
           created_at: string
+          display_number: string | null
           driving_license_number: string | null
           email: string | null
           full_name: string
@@ -77,6 +78,7 @@ export type Database = {
           code: string
           converted_from_lead?: boolean | null
           created_at?: string
+          display_number?: string | null
           driving_license_number?: string | null
           email?: string | null
           full_name: string
@@ -95,6 +97,7 @@ export type Database = {
           code?: string
           converted_from_lead?: boolean | null
           created_at?: string
+          display_number?: string | null
           driving_license_number?: string | null
           email?: string | null
           full_name?: string
@@ -376,6 +379,7 @@ export type Database = {
           converted_from_lead: boolean | null
           created_at: string
           customer_name: string
+          display_number: string | null
           email: string | null
           follow_up_date: string | null
           id: string
@@ -400,6 +404,7 @@ export type Database = {
           converted_from_lead?: boolean | null
           created_at?: string
           customer_name: string
+          display_number?: string | null
           email?: string | null
           follow_up_date?: string | null
           id?: string
@@ -424,6 +429,7 @@ export type Database = {
           converted_from_lead?: boolean | null
           created_at?: string
           customer_name?: string
+          display_number?: string | null
           email?: string | null
           follow_up_date?: string | null
           id?: string
@@ -520,6 +526,7 @@ export type Database = {
           created_at: string
           customer_id: string | null
           description: string | null
+          display_number: string | null
           effective_date: string | null
           id: string
           interest_amount: number | null
@@ -540,6 +547,7 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           description?: string | null
+          display_number?: string | null
           effective_date?: string | null
           id?: string
           interest_amount?: number | null
@@ -560,6 +568,7 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           description?: string | null
+          display_number?: string | null
           effective_date?: string | null
           id?: string
           interest_amount?: number | null
@@ -641,6 +650,7 @@ export type Database = {
           created_at: string
           customer_id: string | null
           discount: number | null
+          display_number: string | null
           down_payment: number | null
           emi_configured: boolean | null
           emi_tenure_months: number | null
@@ -665,6 +675,7 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           discount?: number | null
+          display_number?: string | null
           down_payment?: number | null
           emi_configured?: boolean | null
           emi_tenure_months?: number | null
@@ -689,6 +700,7 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           discount?: number | null
+          display_number?: string | null
           down_payment?: number | null
           emi_configured?: boolean | null
           emi_tenure_months?: number | null
@@ -886,6 +898,7 @@ export type Database = {
           tax_rate: number | null
           updated_at: string
           user_id: string
+          user_letter: string | null
           whatsapp_number: string | null
         }
         Insert: {
@@ -925,6 +938,7 @@ export type Database = {
           tax_rate?: number | null
           updated_at?: string
           user_id: string
+          user_letter?: string | null
           whatsapp_number?: string | null
         }
         Update: {
@@ -964,6 +978,7 @@ export type Database = {
           tax_rate?: number | null
           updated_at?: string
           user_id?: string
+          user_letter?: string | null
           whatsapp_number?: string | null
         }
         Relationships: []
@@ -1163,6 +1178,7 @@ export type Database = {
           amount_paid: number
           balance_amount: number
           created_at: string
+          display_number: string | null
           id: string
           notes: string | null
           payment_mode: Database["public"]["Enums"]["payment_mode"] | null
@@ -1178,6 +1194,7 @@ export type Database = {
           amount_paid?: number
           balance_amount?: number
           created_at?: string
+          display_number?: string | null
           id?: string
           notes?: string | null
           payment_mode?: Database["public"]["Enums"]["payment_mode"] | null
@@ -1193,6 +1210,7 @@ export type Database = {
           amount_paid?: number
           balance_amount?: number
           created_at?: string
+          display_number?: string | null
           id?: string
           notes?: string | null
           payment_mode?: Database["public"]["Enums"]["payment_mode"] | null
@@ -1231,6 +1249,7 @@ export type Database = {
           color: string | null
           condition: string | null
           created_at: string
+          display_number: string | null
           engine_number: string | null
           fitness_expiry: string | null
           fuel_type: string | null
@@ -1285,6 +1304,7 @@ export type Database = {
           color?: string | null
           condition?: string | null
           created_at?: string
+          display_number?: string | null
           engine_number?: string | null
           fitness_expiry?: string | null
           fuel_type?: string | null
@@ -1339,6 +1359,7 @@ export type Database = {
           color?: string | null
           condition?: string | null
           created_at?: string
+          display_number?: string | null
           engine_number?: string | null
           fitness_expiry?: string | null
           fuel_type?: string | null
@@ -1404,6 +1425,7 @@ export type Database = {
           contact_person: string | null
           converted_from_lead: boolean | null
           created_at: string
+          display_number: string | null
           email: string | null
           gst_number: string | null
           id: string
@@ -1425,6 +1447,7 @@ export type Database = {
           contact_person?: string | null
           converted_from_lead?: boolean | null
           created_at?: string
+          display_number?: string | null
           email?: string | null
           gst_number?: string | null
           id?: string
@@ -1446,6 +1469,7 @@ export type Database = {
           contact_person?: string | null
           converted_from_lead?: boolean | null
           created_at?: string
+          display_number?: string | null
           email?: string | null
           gst_number?: string | null
           id?: string
@@ -1466,6 +1490,11 @@ export type Database = {
     }
     Functions: {
       dashboard_summary: { Args: { p_user_id?: string }; Returns: Json }
+      gen_display_number: {
+        Args: { _prefix: string; _user_id: string }
+        Returns: string
+      }
+      get_user_letter: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1474,6 +1503,7 @@ export type Database = {
         Returns: boolean
       }
       is_marketplace_admin: { Args: { _user_id: string }; Returns: boolean }
+      num_to_letter: { Args: { n: number }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "dealer" | "viewer"
