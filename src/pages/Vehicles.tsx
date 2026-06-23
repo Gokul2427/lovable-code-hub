@@ -1674,8 +1674,15 @@ const deleteExistingImage = async (img: VehicleImage) => {
                           (formData as any).marketplace_status === 'featured' ||
                           (formData as any).marketplace_status === 'listed'
                         }
-                        onCheckedChange={(v) => setFormData({ ...formData, marketplace_status: v ? 'approved' : 'unlisted' } as any)} 
+                        onCheckedChange={(v) => setFormData({
+                          ...formData,
+                          marketplace_status: v ? 'approved' : 'unlisted',
+                          // Marketplace queries require is_public=true AND marketplace_status approved/featured.
+                          // Keep them in sync so the toggle alone makes the vehicle visible publicly.
+                          is_public: v ? true : (formData as any).is_public,
+                        } as any)} 
                       />
+
                     </div>
 
                     {(formData.is_public || (formData as any).marketplace_status === 'approved' || (formData as any).marketplace_status === 'featured' || (formData as any).marketplace_status === 'listed') && (
