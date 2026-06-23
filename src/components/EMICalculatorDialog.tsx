@@ -35,19 +35,26 @@ export default function EMICalculatorDialog({ open, onOpenChange }: Props) {
     const r = num(rate);
     const t = num(tenure);
     const principal = Math.max(p - d, 0);
+    const calcEmi = (amt: number) => {
+      if (!amt || !t) return 0;
+      const mRate = r / 12 / 100;
+      return mRate === 0
+        ? amt / t
+        : (amt * mRate * Math.pow(1 + mRate, t)) / (Math.pow(1 + mRate, t) - 1);
+    };
     if (!principal || !t) {
-      return { principal, emi: 0, totalPayable: 0, interest: 0, principalPct: 0, interestPct: 0 };
+      return { principal, emi: 0, totalPayable: 0, interest: 0, principalPct: 0, interestPct: 0, interestNoDown: 0, savedInterest: 0, savedPct: 0 };
     }
-    const mRate = r / 12 / 100;
-    const emi =
-      mRate === 0
-        ? principal / t
-        : (principal * mRate * Math.pow(1 + mRate, t)) / (Math.pow(1 + mRate, t) - 1);
+    const emi = calcEmi(principal);
     const totalPayable = emi * t;
     const interest = totalPayable - principal;
     const principalPct = totalPayable ? (principal / totalPayable) * 100 : 0;
     const interestPct = 100 - principalPct;
-    return { principal, emi, totalPayable, interest, principalPct, interestPct };
+    // What interest would be with NO down payment (for "savings" comparison)
+    const interestNoDown = p > 0 ? calcEmi(p) * t - p : interest;
+    const savedInterest = Math.max(interestNoDown - interest, 0);
+    const savedPct = interestNoDown > 0 ? (savedInterest / interestNoDown) * 100 : 0;
+    return { principal, emi, totalPayable, interest, principalPct, interestPct, interestNoDown, savedInterest, savedPct };
   }, [price, down, rate, tenure]);
 
   const reset = () => {
@@ -207,6 +214,18 @@ export default function EMICalculatorDialog({ open, onOpenChange }: Props) {
                     </div>
                   </div>
                 </div>
+
+                {result.savedInterest > 0 && num(down) > 0 && (
+                  <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-3 py-2 flex items-center justify-between gap-2">
+                    <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                      Down payment saves you
+                    </div>
+                    <div className="text-sm font-bold text-emerald-700 dark:text-emerald-300 tabular-nums">
+                      {formatCurrency(Math.round(result.savedInterest))}
+                      <span className="text-[10px] font-normal ml-1">({result.savedPct.toFixed(1)}% interest)</span>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
