@@ -431,27 +431,8 @@ const DealerPublicPage = () => {
             </div>
           </div>
 
-              {vehicles.length === 0 ? (
-                <Card className={`p-10 text-center ${cardBg}`}>
-                  <Car className={`h-14 w-14 mx-auto ${textMuted} mb-3`} />
-                  <p className={`text-sm ${textSecondary}`}>No vehicles currently available.</p>
-                </Card>
-              ) : (
-                <div className={`grid ${gridCols} gap-3 sm:gap-4`}>
-                  {vehicles.map((vehicle) => (
-                    <CatalogueVehicleCard
-                      key={vehicle.id}
-                      vehicle={vehicle}
-                      images={vehicleImages[vehicle.id] || []}
-                      accent={accent}
-                      template={template}
-                      onClick={() => handleVehicleClick(vehicle)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+
+
 
           {/* Right Column - Sticky Sidebar */}
           <div className="space-y-4">
