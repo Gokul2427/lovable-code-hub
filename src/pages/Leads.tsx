@@ -106,7 +106,7 @@ const Leads = () => {
   const { user } = useAuth();
   const userId = user?.id;
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, 400);
+  const debouncedSearch = useDebounce(searchTerm, 150);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");

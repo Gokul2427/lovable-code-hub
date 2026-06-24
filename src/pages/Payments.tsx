@@ -37,7 +37,7 @@ const Payments = () => {
   const userId = user?.id;
 
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, 400);
+  const debouncedSearch = useDebounce(searchTerm, 150);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<PaymentInsert>>({ amount: 0, payment_mode: "cash", payment_type: "customer_payment" });
   const [showFilters, setShowFilters] = useState(false);
