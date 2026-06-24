@@ -365,66 +365,72 @@ const DealerPublicPage = () => {
 
 
       {/* ============ MAIN CONTENT ============ */}
-      <div className="w-full px-4 sm:px-8 max-w-6xl mx-auto py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="w-full px-4 sm:px-8 max-w-6xl mx-auto py-6 sm:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Left Column - Vehicles */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Contact Info Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {dealerInfo.dealer_phone && (
-                <Card className={`${cardBg} hover:shadow-md transition-all`}>
-                  <CardContent className="flex items-center gap-3 p-3">
-                    <div className={`h-10 w-10 rounded-lg ${accent.bgLight} flex items-center justify-center`}>
-                      <Phone className={`h-4 w-4 ${accent.text}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className={`text-xs ${textMuted}`}>Phone</p>
-                      <p className={`font-medium text-sm truncate ${textPrimary}`}>{dealerInfo.dealer_phone}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              {dealerInfo.dealer_email && (
-                <Card className={`${cardBg} hover:shadow-md transition-all`}>
-                  <CardContent className="flex items-center gap-3 p-3">
-                    <div className={`h-10 w-10 rounded-lg ${accent.bgLight} flex items-center justify-center`}>
-                      <Mail className={`h-4 w-4 ${accent.text}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className={`text-xs ${textMuted}`}>Email</p>
-                      <p className={`font-medium text-sm truncate ${textPrimary}`}>{dealerInfo.dealer_email}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              {dealerInfo.gmap_link && (
-                <a href={dealerInfo.gmap_link} target="_blank" rel="noopener noreferrer">
-                  <Card className={`${cardBg} hover:shadow-md transition-all cursor-pointer h-full`}>
-                    <CardContent className="flex items-center gap-3 p-3">
-                      <div className={`h-10 w-10 rounded-lg ${accent.bgLight} flex items-center justify-center`}>
-                        <MapPin className={`h-4 w-4 ${accent.text}`} />
-                      </div>
-                      <div className="flex-1">
-                        <p className={`text-xs ${textMuted}`}>Location</p>
-                        <p className={`font-medium text-sm ${textPrimary}`}>View on Maps</p>
-                      </div>
-                      <ExternalLink className={`h-3.5 w-3.5 ${textMuted}`} />
-                    </CardContent>
-                  </Card>
-                </a>
+            {/* Vehicles Grid */}
+            <div>
+              <div className="flex items-baseline justify-between mb-4 sm:mb-5">
+                <h2 className="text-[17px] sm:text-2xl font-bold tracking-tight text-gray-900">
+                  Available Vehicles
+                </h2>
+                <span className="text-xs sm:text-sm text-gray-500 font-medium">{vehicles.length} listings</span>
+              </div>
+              {vehicles.length === 0 ? (
+                <div className="p-12 text-center bg-[#f5f5f7] rounded-2xl">
+                  <Car className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                  <p className="text-sm text-gray-500">No vehicles currently available.</p>
+                </div>
+              ) : (
+                <div className={`grid ${gridCols} gap-3 sm:gap-4`}>
+                  {vehicles.map((vehicle) => (
+                    <CatalogueVehicleCard
+                      key={vehicle.id}
+                      vehicle={vehicle}
+                      images={vehicleImages[vehicle.id] || []}
+                      accent={accent}
+                      template={template}
+                      onClick={() => handleVehicleClick(vehicle)}
+                    />
+                  ))}
+                </div>
               )}
             </div>
 
-            {/* Vehicles Grid */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className={`text-xl font-bold flex items-center gap-2 ${textPrimary}`}>
-                  <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${accent.gradient} flex items-center justify-center`}>
-                    <Car className="h-4 w-4 text-white" />
+            {/* Contact Info Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 pt-2">
+              {dealerInfo.dealer_phone && (
+                <a href={`tel:${dealerInfo.dealer_phone}`} className="flex items-center gap-3 p-3 rounded-xl bg-[#f5f5f7] hover:bg-gray-100 transition-colors">
+                  <Phone className="h-4 w-4 text-[#0066ff] shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400">Phone</p>
+                    <p className="font-semibold text-sm truncate text-gray-900">{dealerInfo.dealer_phone}</p>
                   </div>
-                  Available Vehicles ({vehicles.length})
-                </h2>
-              </div>
+                </a>
+              )}
+              {dealerInfo.dealer_email && (
+                <a href={`mailto:${dealerInfo.dealer_email}`} className="flex items-center gap-3 p-3 rounded-xl bg-[#f5f5f7] hover:bg-gray-100 transition-colors">
+                  <Mail className="h-4 w-4 text-[#0066ff] shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400">Email</p>
+                    <p className="font-semibold text-sm truncate text-gray-900">{dealerInfo.dealer_email}</p>
+                  </div>
+                </a>
+              )}
+              {dealerInfo.gmap_link && (
+                <a href={dealerInfo.gmap_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-[#f5f5f7] hover:bg-gray-100 transition-colors">
+                  <MapPin className="h-4 w-4 text-[#0066ff] shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400">Location</p>
+                    <p className="font-semibold text-sm text-gray-900">View on Maps</p>
+                  </div>
+                  <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                </a>
+              )}
+            </div>
+          </div>
+
               {vehicles.length === 0 ? (
                 <Card className={`p-10 text-center ${cardBg}`}>
                   <Car className={`h-14 w-14 mx-auto ${textMuted} mb-3`} />
