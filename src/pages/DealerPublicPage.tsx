@@ -612,12 +612,33 @@ const DealerPublicPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Sticky Mobile Bottom CTA */}
+      {(dealerInfo.dealer_phone || dealerInfo.whatsapp_number) && (
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 px-3 py-2.5 flex gap-2 shadow-[0_-2px_12px_rgba(0,0,0,0.06)]">
+          {dealerInfo.dealer_phone && (
+            <a href={`tel:${dealerInfo.dealer_phone}`} className="flex-1" onClick={() => trackPublicEvent({ eventType: "cta_call", dealerUserId: dealerInfo.user_id, publicPageId: pageId! })}>
+              <Button variant="outline" size="sm" className="w-full gap-2 rounded-full border-gray-200 h-10 text-sm font-semibold">
+                <Phone className="h-4 w-4" /> Call
+              </Button>
+            </a>
+          )}
+          {dealerInfo.whatsapp_number && (
+            <a href={`https://wa.me/${dealerInfo.whatsapp_number.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex-1" onClick={() => trackPublicEvent({ eventType: "cta_whatsapp", dealerUserId: dealerInfo.user_id, publicPageId: pageId! })}>
+              <Button size="sm" className="w-full gap-2 rounded-full bg-[#0066ff] hover:bg-[#0052cc] text-white h-10 text-sm font-semibold shadow-sm">
+                <MessageCircle className="h-4 w-4" /> WhatsApp
+              </Button>
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Footer */}
-      <footer className={`border-t ${isPremium ? "border-gray-800" : "border-gray-200"} mt-12`}>
+      <footer className="border-t border-gray-100 mt-12">
         <div className="w-full px-4 sm:px-6 py-6 text-center">
-          <p className={`text-xs ${textMuted}`}>© {new Date().getFullYear()} {dealerInfo.dealer_name}. Powered by VahanHub</p>
+          <p className="text-xs text-gray-400">© {new Date().getFullYear()} {dealerInfo.dealer_name}. Powered by VahanHub</p>
         </div>
       </footer>
+
     </div>
   );
 
