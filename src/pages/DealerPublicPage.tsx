@@ -283,206 +283,105 @@ const DealerPublicPage = () => {
   const gridCols = isMinimal ? "grid-cols-1" : isShowroom ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3";
 
   return (
-    <div className={`min-h-screen ${pageBg}`}>
-      {/* ============ HERO SECTION ============ */}
-      {isModern ? (
-        // Modern: Full-width gradient hero
-        <div className={`relative overflow-hidden bg-gradient-to-br ${accent.gradient} py-16 sm:py-20`}>
-          <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-          <div className="relative w-full px-4 sm:px-8 max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              {dealerInfo.shop_logo_url && (
-                <img src={dealerInfo.shop_logo_url} alt={dealerInfo.dealer_name} className="h-24 w-24 sm:h-28 sm:w-28 object-contain rounded-2xl bg-white/20 backdrop-blur-sm p-3 border border-white/20" />
-              )}
-              <div className="text-center md:text-left flex-1">
-                <div className="flex flex-col md:flex-row md:items-center gap-3">
-                  <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">{dealerInfo.dealer_name || "Dealer"}</h1>
-                  {dealerInfo.show_ratings !== false && stats.avgRating > 0 && (
-                    <Badge className="bg-white/20 text-white border-0 text-sm py-1 px-3 gap-1.5 w-fit mx-auto md:mx-0 backdrop-blur-sm">
-                      <Star className="h-3.5 w-3.5 fill-white" /> {stats.avgRating} ({stats.totalReviews})
-                    </Badge>
-                  )}
-                </div>
-                {dealerInfo.shop_tagline && <p className="text-lg text-white/80 mt-2">{dealerInfo.shop_tagline}</p>}
-                <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
-                  {renderTrustBadges(true)}
-                </div>
+    <div className={`min-h-screen bg-white text-gray-900 pb-24 lg:pb-0`}>
+      {/* ============ HERO — Clean Automotive ============ */}
+      <header className="relative border-b border-gray-100 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-5 sm:pt-10 sm:pb-8">
+          <div className="flex items-start sm:items-center gap-4 sm:gap-6">
+            {dealerInfo.shop_logo_url ? (
+              <img
+                src={dealerInfo.shop_logo_url}
+                alt={dealerInfo.dealer_name}
+                className="h-14 w-14 sm:h-20 sm:w-20 object-contain rounded-2xl bg-[#f5f5f7] p-2 shrink-0"
+              />
+            ) : (
+              <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-2xl bg-[#f5f5f7] flex items-center justify-center shrink-0">
+                <Car className="h-7 w-7 text-gray-400" />
               </div>
-              <div className="flex flex-row md:flex-col gap-2">
-                {renderCtaButtons(true)}
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : isPremium ? (
-        // Premium: Dark gradient hero
-        <div className="relative border-b border-gray-800">
-          <div className={`absolute inset-0 bg-gradient-to-r ${accent.gradient} opacity-10`} />
-          <div className="w-full px-4 sm:px-8 max-w-6xl mx-auto py-10 sm:py-14 relative">
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              {dealerInfo.shop_logo_url && (
-                <div className="relative">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${accent.gradient} rounded-2xl blur-xl opacity-40`} />
-                  <img src={dealerInfo.shop_logo_url} alt={dealerInfo.dealer_name} className="relative h-28 w-28 sm:h-32 sm:w-32 object-contain rounded-2xl bg-gray-800 p-3 border border-gray-700" />
-                </div>
-              )}
-              <div className="text-center md:text-left flex-1">
-                <div className="flex flex-col md:flex-row md:items-center gap-3">
-                  <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{dealerInfo.dealer_name || "Dealer"}</h1>
-                  {dealerInfo.show_ratings !== false && stats.avgRating > 0 && (
-                    <Badge className="bg-white/10 text-white border-0 text-sm py-1 px-3 gap-1.5 w-fit mx-auto md:mx-0 backdrop-blur-sm">
-                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {stats.avgRating} ({stats.totalReviews})
-                    </Badge>
-                  )}
-                </div>
-                {dealerInfo.shop_tagline && <p className="text-lg text-gray-400 mt-2">{dealerInfo.shop_tagline}</p>}
-                <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
-                  {renderTrustBadges(false)}
-                </div>
-              </div>
-              <div className="flex flex-row md:flex-col gap-2">
-                {renderCtaButtons(false)}
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        // Classic / Minimal / Showroom: Clean white hero
-        <div className="relative border-b border-gray-200 bg-white">
-          <div className="w-full px-4 sm:px-8 max-w-6xl mx-auto py-8 sm:py-12 relative">
-            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
-              {dealerInfo.shop_logo_url && (
-                <div className="relative">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${accent.gradient} rounded-2xl blur-xl opacity-30`} />
-                  <img src={dealerInfo.shop_logo_url} alt={dealerInfo.dealer_name} className="relative h-24 w-24 sm:h-32 sm:w-32 object-contain rounded-2xl bg-white p-3 border border-gray-200 shadow-sm" />
-                </div>
-              )}
-              <div className="text-center md:text-left flex-1">
-                <div className="flex flex-col md:flex-row md:items-center gap-3">
-                  <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">{dealerInfo.dealer_name || "Dealer"}</h1>
-                  {dealerInfo.show_ratings !== false && stats.avgRating > 0 && (
-                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-sm py-1 px-3 gap-1.5 w-fit mx-auto md:mx-0 shadow-lg">
-                      <Star className="h-3.5 w-3.5 fill-white" /> {stats.avgRating} ({stats.totalReviews})
-                    </Badge>
-                  )}
-                </div>
-                {dealerInfo.shop_tagline && <p className="text-base sm:text-lg text-gray-600 mt-2">{dealerInfo.shop_tagline}</p>}
-                <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
-                  {renderTrustBadges(false)}
-                </div>
-                {dealerInfo.dealer_address && (
-                  <div className="flex items-center gap-1.5 text-sm text-gray-600 mt-3 justify-center md:justify-start">
-                    <MapPin className={`h-4 w-4 ${accent.text}`} />
-                    <span className="font-medium">{dealerInfo.dealer_address.split(",").slice(-3, -1).join(", ").trim()}</span>
-                  </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <h1 className="text-[22px] sm:text-4xl font-bold tracking-tight text-gray-900 truncate">
+                  {dealerInfo.dealer_name || "Dealer"}
+                </h1>
+                {dealerInfo.show_ratings !== false && stats.avgRating > 0 && (
+                  <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-gray-900">
+                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                    {stats.avgRating}
+                    <span className="text-gray-400 font-normal">({stats.totalReviews})</span>
+                  </span>
                 )}
               </div>
-              <div className="flex flex-row md:flex-col gap-2">
-                {renderCtaButtons(false)}
-              </div>
+              {dealerInfo.shop_tagline && (
+                <p className="text-sm sm:text-base text-gray-500 mt-1 line-clamp-2">{dealerInfo.shop_tagline}</p>
+              )}
+              {dealerInfo.dealer_address && (
+                <p className="hidden sm:flex items-center gap-1.5 text-sm text-gray-500 mt-2">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {dealerInfo.dealer_address.split(",").slice(-3, -1).join(", ").trim()}
+                </p>
+              )}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ============ TRUST BAR (Modern only) ============ */}
-      {isModern && (
-        <div className="bg-white border-b border-gray-100">
-          <div className="max-w-6xl mx-auto px-4 sm:px-8 py-4 flex flex-wrap items-center justify-center gap-6 sm:gap-10">
-            {stats.vehiclesSold > 0 && (
-              <div className="flex items-center gap-2">
-                <ThumbsUp className={`h-5 w-5 ${accent.text}`} />
-                <span className="text-sm font-semibold text-gray-900">{stats.vehiclesSold}+ Happy Customers</span>
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <Shield className={`h-5 w-5 ${accent.text}`} />
-              <span className="text-sm font-semibold text-gray-900">Verified Dealer</span>
-            </div>
-            {stats.avgRating > 0 && (
-              <div className="flex items-center gap-2">
-                <Star className={`h-5 w-5 fill-amber-400 text-amber-400`} />
-                <span className="text-sm font-semibold text-gray-900">{stats.avgRating} Rating ({stats.totalReviews} reviews)</span>
-              </div>
-            )}
-            {dealerInfo.dealer_address && (
-              <div className="flex items-center gap-2">
-                <MapPin className={`h-5 w-5 ${accent.text}`} />
-                <span className="text-sm text-gray-600">{dealerInfo.dealer_address.split(",").slice(-3, -1).join(", ").trim()}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ============ MAIN CONTENT ============ */}
-      <div className="w-full px-4 sm:px-8 max-w-6xl mx-auto py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Vehicles */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Contact Info Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="hidden sm:flex flex-col gap-2 shrink-0">
               {dealerInfo.dealer_phone && (
-                <Card className={`${cardBg} hover:shadow-md transition-all`}>
-                  <CardContent className="flex items-center gap-3 p-3">
-                    <div className={`h-10 w-10 rounded-lg ${accent.bgLight} flex items-center justify-center`}>
-                      <Phone className={`h-4 w-4 ${accent.text}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className={`text-xs ${textMuted}`}>Phone</p>
-                      <p className={`font-medium text-sm truncate ${textPrimary}`}>{dealerInfo.dealer_phone}</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <a href={`tel:${dealerInfo.dealer_phone}`} onClick={() => trackPublicEvent({ eventType: "cta_call", dealerUserId: dealerInfo.user_id, publicPageId: pageId! })}>
+                  <Button size="sm" variant="outline" className="gap-2 rounded-full border-gray-200 text-gray-800 hover:bg-gray-50 px-4">
+                    <Phone className="h-4 w-4" /> Call
+                  </Button>
+                </a>
               )}
-              {dealerInfo.dealer_email && (
-                <Card className={`${cardBg} hover:shadow-md transition-all`}>
-                  <CardContent className="flex items-center gap-3 p-3">
-                    <div className={`h-10 w-10 rounded-lg ${accent.bgLight} flex items-center justify-center`}>
-                      <Mail className={`h-4 w-4 ${accent.text}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className={`text-xs ${textMuted}`}>Email</p>
-                      <p className={`font-medium text-sm truncate ${textPrimary}`}>{dealerInfo.dealer_email}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              {dealerInfo.gmap_link && (
-                <a href={dealerInfo.gmap_link} target="_blank" rel="noopener noreferrer">
-                  <Card className={`${cardBg} hover:shadow-md transition-all cursor-pointer h-full`}>
-                    <CardContent className="flex items-center gap-3 p-3">
-                      <div className={`h-10 w-10 rounded-lg ${accent.bgLight} flex items-center justify-center`}>
-                        <MapPin className={`h-4 w-4 ${accent.text}`} />
-                      </div>
-                      <div className="flex-1">
-                        <p className={`text-xs ${textMuted}`}>Location</p>
-                        <p className={`font-medium text-sm ${textPrimary}`}>View on Maps</p>
-                      </div>
-                      <ExternalLink className={`h-3.5 w-3.5 ${textMuted}`} />
-                    </CardContent>
-                  </Card>
+              {dealerInfo.whatsapp_number && (
+                <a href={`https://wa.me/${dealerInfo.whatsapp_number.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" onClick={() => trackPublicEvent({ eventType: "cta_whatsapp", dealerUserId: dealerInfo.user_id, publicPageId: pageId! })}>
+                  <Button size="sm" className="gap-2 rounded-full bg-[#0066ff] hover:bg-[#0052cc] text-white px-4 shadow-sm">
+                    <MessageCircle className="h-4 w-4" /> WhatsApp
+                  </Button>
                 </a>
               )}
             </div>
+          </div>
+          {/* Trust chips */}
+          <div className="flex flex-wrap items-center gap-2 mt-4 sm:mt-5">
+            <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-[#0066ff] bg-blue-50 px-2.5 py-1 rounded-full">
+              <Shield className="h-3 w-3" /> Verified Dealer
+            </span>
+            {dealerInfo.show_vehicles_sold && stats.vehiclesSold > 0 && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full">
+                <ThumbsUp className="h-3 w-3" /> {stats.vehiclesSold}+ Sold
+              </span>
+            )}
+            {dealerInfo.dealer_tag && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
+                <CheckCircle className="h-3 w-3" /> {dealerInfo.dealer_tag}
+              </span>
+            )}
+            {dealerInfo.show_dealer_page_views && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
+                <Clock className="h-3 w-3" /> {liveStats.viewsToday} views today
+              </span>
+            )}
+          </div>
+        </div>
+      </header>
 
+
+      {/* ============ MAIN CONTENT ============ */}
+      <div className="w-full px-4 sm:px-8 max-w-6xl mx-auto py-6 sm:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Left Column - Vehicles */}
+          <div className="lg:col-span-2 space-y-6">
             {/* Vehicles Grid */}
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className={`text-xl font-bold flex items-center gap-2 ${textPrimary}`}>
-                  <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${accent.gradient} flex items-center justify-center`}>
-                    <Car className="h-4 w-4 text-white" />
-                  </div>
-                  Available Vehicles ({vehicles.length})
+              <div className="flex items-baseline justify-between mb-4 sm:mb-5">
+                <h2 className="text-[17px] sm:text-2xl font-bold tracking-tight text-gray-900">
+                  Available Vehicles
                 </h2>
+                <span className="text-xs sm:text-sm text-gray-500 font-medium">{vehicles.length} listings</span>
               </div>
               {vehicles.length === 0 ? (
-                <Card className={`p-10 text-center ${cardBg}`}>
-                  <Car className={`h-14 w-14 mx-auto ${textMuted} mb-3`} />
-                  <p className={`text-sm ${textSecondary}`}>No vehicles currently available.</p>
-                </Card>
+                <div className="p-12 text-center bg-[#f5f5f7] rounded-2xl">
+                  <Car className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                  <p className="text-sm text-gray-500">No vehicles currently available.</p>
+                </div>
               ) : (
                 <div className={`grid ${gridCols} gap-3 sm:gap-4`}>
                   {vehicles.map((vehicle) => (
@@ -498,7 +397,42 @@ const DealerPublicPage = () => {
                 </div>
               )}
             </div>
+
+            {/* Contact Info Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 pt-2">
+              {dealerInfo.dealer_phone && (
+                <a href={`tel:${dealerInfo.dealer_phone}`} className="flex items-center gap-3 p-3 rounded-xl bg-[#f5f5f7] hover:bg-gray-100 transition-colors">
+                  <Phone className="h-4 w-4 text-[#0066ff] shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400">Phone</p>
+                    <p className="font-semibold text-sm truncate text-gray-900">{dealerInfo.dealer_phone}</p>
+                  </div>
+                </a>
+              )}
+              {dealerInfo.dealer_email && (
+                <a href={`mailto:${dealerInfo.dealer_email}`} className="flex items-center gap-3 p-3 rounded-xl bg-[#f5f5f7] hover:bg-gray-100 transition-colors">
+                  <Mail className="h-4 w-4 text-[#0066ff] shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400">Email</p>
+                    <p className="font-semibold text-sm truncate text-gray-900">{dealerInfo.dealer_email}</p>
+                  </div>
+                </a>
+              )}
+              {dealerInfo.gmap_link && (
+                <a href={dealerInfo.gmap_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-[#f5f5f7] hover:bg-gray-100 transition-colors">
+                  <MapPin className="h-4 w-4 text-[#0066ff] shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400">Location</p>
+                    <p className="font-semibold text-sm text-gray-900">View on Maps</p>
+                  </div>
+                  <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                </a>
+              )}
+            </div>
           </div>
+
+
+
 
           {/* Right Column - Sticky Sidebar */}
           <div className="space-y-4">
@@ -678,12 +612,33 @@ const DealerPublicPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Sticky Mobile Bottom CTA */}
+      {(dealerInfo.dealer_phone || dealerInfo.whatsapp_number) && (
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 px-3 py-2.5 flex gap-2 shadow-[0_-2px_12px_rgba(0,0,0,0.06)]">
+          {dealerInfo.dealer_phone && (
+            <a href={`tel:${dealerInfo.dealer_phone}`} className="flex-1" onClick={() => trackPublicEvent({ eventType: "cta_call", dealerUserId: dealerInfo.user_id, publicPageId: pageId! })}>
+              <Button variant="outline" size="sm" className="w-full gap-2 rounded-full border-gray-200 h-10 text-sm font-semibold">
+                <Phone className="h-4 w-4" /> Call
+              </Button>
+            </a>
+          )}
+          {dealerInfo.whatsapp_number && (
+            <a href={`https://wa.me/${dealerInfo.whatsapp_number.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex-1" onClick={() => trackPublicEvent({ eventType: "cta_whatsapp", dealerUserId: dealerInfo.user_id, publicPageId: pageId! })}>
+              <Button size="sm" className="w-full gap-2 rounded-full bg-[#0066ff] hover:bg-[#0052cc] text-white h-10 text-sm font-semibold shadow-sm">
+                <MessageCircle className="h-4 w-4" /> WhatsApp
+              </Button>
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Footer */}
-      <footer className={`border-t ${isPremium ? "border-gray-800" : "border-gray-200"} mt-12`}>
+      <footer className="border-t border-gray-100 mt-12">
         <div className="w-full px-4 sm:px-6 py-6 text-center">
-          <p className={`text-xs ${textMuted}`}>© {new Date().getFullYear()} {dealerInfo.dealer_name}. Powered by VahanHub</p>
+          <p className="text-xs text-gray-400">© {new Date().getFullYear()} {dealerInfo.dealer_name}. Powered by VahanHub</p>
         </div>
       </footer>
+
     </div>
   );
 
