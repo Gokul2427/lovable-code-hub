@@ -402,6 +402,73 @@ const Marketplace = () => {
       {/* Spacer */}
       <div className="h-28 md:h-32" />
 
+      {/* ───── RECENTLY ADDED (LIVE, LATEST 4) ───── */}
+      {latestVehicles.length > 0 && (
+        <section className="container mx-auto px-3 md:px-4 pt-6 md:pt-8">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg md:text-2xl font-bold text-foreground">Recently Added</h2>
+              <span className="text-[10px] md:text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-0.5">
+                LIVE
+              </span>
+            </div>
+            <Link to="/marketplace/vehicles" className="text-xs md:text-sm text-blue-600 hover:text-blue-700 font-semibold inline-flex items-center gap-1">
+              View all <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {latestVehicles.map((v: any) => {
+              const img = (latestImages as Record<string, string>)[v.id];
+              return (
+                <Link
+                  key={v.id}
+                  to={`/marketplace/vehicle/${v.id}`}
+                  className="group bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg hover:border-blue-200 transition-all duration-300"
+                >
+                  <div className="aspect-[4/3] bg-muted relative overflow-hidden">
+                    {img ? (
+                      <img
+                        src={img}
+                        alt={`${v.brand} ${v.model}`}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Car className="h-10 w-10 text-muted-foreground/40" />
+                      </div>
+                    )}
+                    <span className="absolute top-2 left-2 text-[9px] md:text-[10px] font-bold uppercase tracking-wide bg-white/95 text-blue-700 rounded-full px-2 py-0.5 shadow-sm">
+                      New
+                    </span>
+                  </div>
+                  <div className="p-3 md:p-4 space-y-1.5">
+                    <h3 className="font-bold text-sm md:text-base text-foreground truncate">
+                      {v.manufacturing_year ?? ""} {v.brand} {v.model}
+                    </h3>
+                    <p className="text-[11px] md:text-xs text-muted-foreground truncate">
+                      {[v.variant, v.fuel_type].filter(Boolean).join(" • ")}
+                    </p>
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-sm md:text-base font-bold text-blue-600">
+                        {v.selling_price ? formatCurrency(v.selling_price) : "Price on ask"}
+                      </span>
+                      {v.odometer_reading ? (
+                        <span className="text-[10px] md:text-xs text-muted-foreground">
+                          {formatIndianNumber(v.odometer_reading)} km
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+
       {/* ───── PROMO CARDS ───── */}
       <section className="container mx-auto px-3 md:px-4 py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
