@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import LocationSelector, { MAJOR_CITIES } from "@/components/marketplace/LocationSelector";
 import useWishlist from "@/hooks/useWishlist";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { formatCurrency, formatIndianNumber } from "@/lib/formatters";
 
 // Lazy load heavy / below-fold components
 const MarketplaceFooter = lazy(() => import("@/components/marketplace/MarketplaceFooter"));
@@ -114,6 +117,44 @@ const Marketplace = () => {
   const { wishlistCount } = useWishlist();
 
   const availableCities = useMemo(() => MAJOR_CITIES.map(c => c.name), []);
+
+  // Recently added marketplace vehicles (live — refetches after new additions).
+  const { data: latestVehicles = [] } = useQuery({
+    queryKey: ["marketplace-latest-vehicles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("vehicles")
+        .select("id, brand, model, variant, year, selling_price, kilometers_driven, fuel_type, city, code")
+        .eq("is_public", true)
+        .in("marketplace_status", ["approved", "pending"])
+        .eq("status", "in_stock")
+        .order("created_at", { ascending: false })
+        .limit(4);
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: true,
+  });
+
+  const { data: latestImages = {} } = useQuery({
+    queryKey: ["marketplace-latest-images", latestVehicles.map(v => v.id).join(",")],
+    enabled: latestVehicles.length > 0,
+    queryFn: async () => {
+      const ids = latestVehicles.map(v => v.id);
+      const { data } = await supabase
+        .from("vehicle_images")
+        .select("vehicle_id, image_url, display_order, is_primary")
+        .in("vehicle_id", ids)
+        .order("is_primary", { ascending: false })
+        .order("display_order", { ascending: true });
+      const map: Record<string, string> = {};
+      (data || []).forEach((r: any) => {
+        if (!map[r.vehicle_id]) map[r.vehicle_id] = r.image_url;
+      });
+      return map;
+    },
+  });
 
   // Show location popup after 4 seconds
   useEffect(() => {
