@@ -79,8 +79,12 @@ const queryClient = new QueryClient({
 });
 
 // ─── Route wrapper helpers ───────────────────────────────────────────
+// Fallback defaults to `null` so React reuses the previous page UI until the new
+// route's own skeleton mounts — eliminates the "generic skeleton → page skeleton"
+// double-loader flash on every navigation. Pass an explicit `skeleton` prop when
+// a route needs an initial-load placeholder (e.g. footer pages).
 const SuspenseWrap = ({ children, skeleton }: { children: React.ReactNode; skeleton?: React.ReactNode }) => (
-  <Suspense fallback={skeleton || <PageSkeleton />}>{children}</Suspense>
+  <Suspense fallback={skeleton ?? null}>{children}</Suspense>
 );
 
 const ProtectedPage = ({ children }: { children: React.ReactNode }) => (

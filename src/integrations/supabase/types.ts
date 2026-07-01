@@ -1504,6 +1504,7 @@ export type Database = {
       }
       is_marketplace_admin: { Args: { _user_id: string }; Returns: boolean }
       num_to_letter: { Args: { n: number }; Returns: string }
+      seed_all_demo_data: { Args: { p_user_id: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "dealer" | "viewer"
