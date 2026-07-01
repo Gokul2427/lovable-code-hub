@@ -114,18 +114,50 @@ const Documents = () => {
     }
   };
 
-  const openDocViewer = (doc: Document) => { setSelectedDoc(doc); setDocViewerOpen(true); };
+  // The `documents` bucket is PRIVATE, so `getPublicUrl` returns a URL that 404s
+  // ("bucket not found"). Extract the storage path and mint a short-lived signed
+  // URL for viewing / downloading.
+  const extractDocPath = (url: string): string | null => {
+    const marker = "/documents/";
+    const idx = url.indexOf(marker);
+    if (idx === -1) return null;
+    return url.substring(idx + marker.length);
+  };
+
+  const getViewableUrl = async (doc: Document): Promise<string> => {
+    const path = extractDocPath(doc.document_url);
+    if (!path) return doc.document_url;
+    const { data, error } = await supabase.storage
+      .from("documents")
+      .createSignedUrl(path, 60 * 60); // 1 hour
+    if (error || !data?.signedUrl) return doc.document_url;
+    return data.signedUrl;
+  };
+
+  const [viewerUrl, setViewerUrl] = useState<string>("");
+  const openDocViewer = async (doc: Document) => {
+    setSelectedDoc(doc);
+    setViewerUrl("");
+    setDocViewerOpen(true);
+    const url = await getViewableUrl(doc);
+    setViewerUrl(url);
+  };
 
   const handleDownload = async (doc: Document) => {
     try {
-      const response = await fetch(doc.document_url);
+      const url = await getViewableUrl(doc);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Fetch failed");
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const objUrl = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url; a.download = doc.document_name || "document";
+      a.href = objUrl; a.download = doc.document_name || "document";
       document.body.appendChild(a); a.click();
-      document.body.removeChild(a); window.URL.revokeObjectURL(url);
-    } catch (err) { console.error("Download failed", err); }
+      document.body.removeChild(a); window.URL.revokeObjectURL(objUrl);
+    } catch (err: any) {
+      console.error("Download failed", err);
+      toast({ title: "Download failed", description: err?.message || "Please try again", variant: "destructive" });
+    }
   };
 
   const getVehicleName = (vehicleId: string) => {
@@ -302,17 +334,19 @@ const Documents = () => {
               <span>{selectedDoc?.document_name}</span>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="gap-2" onClick={() => selectedDoc && handleDownload(selectedDoc)}><Download className="h-4 w-4" />Download</Button>
-                <a href={selectedDoc?.document_url || ""} target="_blank" rel="noopener noreferrer"><Button variant="outline" size="sm" className="gap-2"><ExternalLink className="h-4 w-4" />Open</Button></a>
+                <a href={viewerUrl || "#"} target="_blank" rel="noopener noreferrer"><Button variant="outline" size="sm" className="gap-2" disabled={!viewerUrl}><ExternalLink className="h-4 w-4" />Open</Button></a>
               </div>
             </DialogTitle>
           </DialogHeader>
           {selectedDoc && (
-            <div className="h-[75vh] bg-muted rounded-lg overflow-hidden">
-              {selectedDoc.document_url.toLowerCase().endsWith('.pdf') ? (
-                <iframe src={selectedDoc.document_url} className="w-full h-full border-0" />
+            <div className="h-[75vh] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+              {!viewerUrl ? (
+                <div className="text-sm text-muted-foreground">Loading document…</div>
+              ) : (selectedDoc.document_url.toLowerCase().endsWith('.pdf') || viewerUrl.toLowerCase().includes('.pdf')) ? (
+                <iframe src={viewerUrl} className="w-full h-full border-0" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center p-4">
-                  <img src={selectedDoc.document_url} alt={selectedDoc.document_name} className="max-w-full max-h-full object-contain" />
+                  <img src={viewerUrl} alt={selectedDoc.document_name} className="max-w-full max-h-full object-contain" />
                 </div>
               )}
             </div>
