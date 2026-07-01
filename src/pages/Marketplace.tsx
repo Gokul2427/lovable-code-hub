@@ -124,7 +124,7 @@ const Marketplace = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vehicles")
-        .select("id, brand, model, variant, year, selling_price, kilometers_driven, fuel_type, city, code")
+        .select("id, brand, model, variant, manufacturing_year, selling_price, odometer_reading, fuel_type, code")
         .eq("is_public", true)
         .in("marketplace_status", ["approved", "pending"])
         .eq("status", "in_stock")
