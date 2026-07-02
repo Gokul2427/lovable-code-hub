@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Search, Eye, Phone, Mail, User, Car, MapPin, Filter, CalendarCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Eye, Phone, Mail, User, Car, MapPin, Filter, CalendarCheck, Columns3 } from "lucide-react";
 import ViewToggle from "@/components/ViewToggle";
 import { useViewMode } from "@/hooks/useViewMode";
 import { Badge } from "@/components/ui/badge";
@@ -106,6 +106,7 @@ const Leads = () => {
   const { user } = useAuth();
   const userId = user?.id;
   const [searchTerm, setSearchTerm] = useState("");
+  const [kanbanMode, setKanbanMode] = useState(false);
   const debouncedSearch = useDebounce(searchTerm, 150);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
@@ -634,6 +635,15 @@ const Leads = () => {
                     {activeFilterCount}
                   </span>
                 )}
+              </Button>
+              <Button
+                variant={kanbanMode ? "default" : "outline"}
+                size="icon"
+                onClick={() => setKanbanMode((v) => !v)}
+                className="shrink-0"
+                title="Kanban board"
+              >
+                <Columns3 className="h-4 w-4" />
               </Button>
               <div className="shrink-0">
                 <ViewToggle viewMode={viewMode} onViewChange={setViewMode} />
