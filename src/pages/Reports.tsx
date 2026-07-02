@@ -1236,45 +1236,7 @@ return (
 <SelectItem value="12months">Last 12 Months</SelectItem>
 </SelectContent>
 </Select>
-<div className="flex items-center gap-2">
-  <span className="text-sm text-muted-foreground">Accounting</span>
-
-  <Select
-    value={accountingMode}
-    onValueChange={(v: "simple" | "nbfc") => setAccountingMode(v)}
-  >
-
-  {accountingMode === "nbfc" && (
-  <div className="flex items-center gap-2">
-    <span className="text-sm text-muted-foreground">View</span>
-
-    <Select
-      value={nbfcView}
-      onValueChange={(v: "visual" | "breakdown") => setNbfcView(v)}
-    >
-      <SelectTrigger className="w-44">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="visual">Visual Summary</SelectItem>
-        <SelectItem value="breakdown">Ledger Breakdown</SelectItem>
-      </SelectContent>
-    </Select>
-  </div>
-)}
-
-
-
-    <SelectTrigger className="w-44">
-      <SelectValue />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="simple">Simple Cash</SelectItem>
-      <SelectItem value="nbfc">NBFC / EMI Grade</SelectItem> 
-    </SelectContent>
-  </Select>
-</div>
-
+{/* Accounting mode toggle removed — Reports now always use Simple Cash accounting */}
 </div>
 
 
