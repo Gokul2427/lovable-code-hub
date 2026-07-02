@@ -660,7 +660,51 @@ const Leads = () => {
         </CardHeader>
 
         <CardContent>
-          {viewMode === "list" ? (
+        <CardContent>
+          {kanbanMode ? (
+            <div className="flex gap-3 overflow-x-auto pb-4">
+              {leadStatuses.map((status) => {
+                const colLeads = displayedLeads.filter((l) => l.status === status);
+                return (
+                  <div key={status} className="min-w-[260px] w-[260px] shrink-0 bg-muted/40 rounded-lg p-2 flex flex-col">
+                    <div className="flex items-center justify-between px-2 py-1 mb-2 sticky top-0">
+                      <Badge className={getStatusColor(status) + " capitalize"}>{status}</Badge>
+                      <span className="text-xs text-muted-foreground">{colLeads.length}</span>
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      {colLeads.map((lead) => (
+                        <Card key={lead.id} className="cursor-pointer hover:shadow-md transition-shadow border border-border" onClick={() => openDetailDialog(lead)}>
+                          <CardContent className="p-3 space-y-2">
+                            <div className="flex items-start justify-between gap-1">
+                              <p className="font-semibold text-sm truncate">{lead.customer_name}</p>
+                              <Badge className={getPriorityColor(lead.priority) + " text-[10px] shrink-0"}>{lead.priority}</Badge>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Phone className="h-3 w-3 shrink-0" />
+                              <span className="truncate">{lead.phone}</span>
+                            </div>
+                            {lead.vehicle_interest && (
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <Car className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{lead.vehicle_interest}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                              <span className="font-mono">{lead.lead_number}</span>
+                              {lead.follow_up_date && <span>Follow: {format(new Date(lead.follow_up_date), "dd MMM")}</span>}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                      {colLeads.length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center py-4">No leads</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : viewMode === "list" ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
