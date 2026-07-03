@@ -16,6 +16,7 @@ interface DashboardSummary {
   total_cost: number;
   total_expenses: number;
   pending_emis: number;
+  pending_vendor_payments: number;
   monthly_collections: number;
   inventory_value: { in_stock: number; sold: number; reserved: number };
   lead_counts: { total: number; qualified: number; won: number; lost: number };
@@ -184,11 +185,12 @@ export function useDashboardData() {
     avgSaleValue: summary.total_sales_count > 0 ? summary.total_sales_value / summary.total_sales_count : 0,
     totalExpenses: summary.total_expenses,
     pendingEMIs: summary.pending_emis,
+    pendingVendorPayments: summary.pending_vendor_payments ?? 0,
   } : {
     totalVehicles: 0, vehiclesInStock: 0, vehiclesSold: 0, vehiclesReserved: 0,
     totalCustomers: 0, totalVendors: 0, pendingPayments: 0, monthlySales: 0,
     totalRevenue: 0, totalProfit: 0, totalSalesCount: 0, avgSaleValue: 0,
-    totalExpenses: 0, pendingEMIs: 0,
+    totalExpenses: 0, pendingEMIs: 0, pendingVendorPayments: 0,
   };
 
   const COLORS = ['hsl(221, 83%, 53%)', 'hsl(142, 71%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(262, 83%, 58%)', 'hsl(339, 90%, 51%)'];
