@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerPagination } from "@/hooks/useServerPagination";
 import ScrollLoader from "@/components/ScrollLoader";
@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Eye } from "lucide-react";
+import { Plus, Search, Eye, Loader2 } from "lucide-react";
+import DataDialog from "@/components/DataDialog";
 import { formatIndianNumber, formatCurrency } from "@/lib/formatters";
 import ViewToggle from "@/components/ViewToggle";
 import { useViewMode } from "@/hooks/useViewMode";
@@ -92,7 +93,10 @@ const Payments = () => {
   }
 };
 
-  if (loading) {
+  const hasLoadedOnce = useRef(false);
+  useEffect(() => { if (!loading) hasLoadedOnce.current = true; }, [loading]);
+
+  if (loading && !hasLoadedOnce.current) {
     return <PageSkeleton />;
   }
 
@@ -176,12 +180,17 @@ const Payments = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <CardTitle>Payment List ({payments.length}{hasMorePayments ? "+" : ""})</CardTitle>
-            <ViewToggle viewMode={viewMode} onViewChange={setViewMode} />
+            {loading && hasLoadedOnce.current && (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            )}
           </div>
-        </CardHeader>
-        <CardContent>
-          {viewMode === "list" ? (
+          <ViewToggle viewMode={viewMode} onViewChange={setViewMode} />
+        </div>
+      </CardHeader>
+      <CardContent>
+        {viewMode === "list" ? (
           <Table>
             <TableHeader><TableRow><TableHead>Number</TableHead><TableHead>Date</TableHead><TableHead>Type</TableHead><TableHead>Mode</TableHead><TableHead>Amount</TableHead><TableHead>Action</TableHead></TableRow></TableHeader>
             <TableBody>
@@ -245,92 +254,29 @@ const Payments = () => {
           </form>
         </DialogContent>
       </Dialog>
-      <Dialog open={!!selectedPayment} onOpenChange={(open) => { if (!open) setSelectedPayment(null); }}>
-  <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto rounded-2xl">
-    <DialogHeader>
-      <DialogTitle>Payment Breakdown</DialogTitle>
-    </DialogHeader>
-
-
-    {selectedPayment && (
-      <div className="space-y-3 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Payment Number</span>
-          <span className="font-mono font-medium">{selectedPayment.payment_number}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Total Amount</span>
-          <span className="font-bold text-lg">{formatCurrency(selectedPayment.amount)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Payment Type</span>
-          <Badge className={getPaymentTypeBadge(selectedPayment.payment_type)}>{selectedPayment.payment_type.replace("_", " ")}</Badge>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Payment Mode</span>
-          <span className="capitalize font-medium">{selectedPayment.payment_mode.replace("_", " ")}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Payment Date</span>
-          <span className="font-medium">{format(new Date(selectedPayment.payment_date), "dd MMM yyyy")}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Recorded At</span>
-          <span className="font-medium">{new Date(selectedPayment.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })} IST</span>
-        </div>
-
-        {selectedPayment.payment_purpose && (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Purpose</span>
-            <span className="capitalize font-medium">{selectedPayment.payment_purpose.replace("_", " ")}</span>
+      <DataDialog
+        open={!!selectedPayment}
+        onOpenChange={(open) => { if (!open) setSelectedPayment(null); }}
+        title="Payment Breakdown"
+      >
+        {selectedPayment && (
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between"><span className="text-muted-foreground">Payment Number</span><span className="font-mono font-medium">{selectedPayment.payment_number}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Total Amount</span><span className="font-bold text-lg">{formatCurrency(selectedPayment.amount)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Payment Type</span><Badge className={getPaymentTypeBadge(selectedPayment.payment_type)}>{selectedPayment.payment_type.replace("_", " ")}</Badge></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Payment Mode</span><span className="capitalize font-medium">{selectedPayment.payment_mode.replace("_", " ")}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Payment Date</span><span className="font-medium">{format(new Date(selectedPayment.payment_date), "dd MMM yyyy")}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Recorded At</span><span className="font-medium">{new Date(selectedPayment.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })} IST</span></div>
+            {selectedPayment.payment_purpose && (<div className="flex justify-between"><span className="text-muted-foreground">Purpose</span><span className="capitalize font-medium">{selectedPayment.payment_purpose.replace("_", " ")}</span></div>)}
+            {selectedPayment.description && (<div className="flex justify-between"><span className="text-muted-foreground">Description</span><span className="font-medium text-right max-w-[60%]">{selectedPayment.description}</span></div>)}
+            {selectedPayment.reference_type && (<div className="flex justify-between"><span className="text-muted-foreground">Linked To</span><span className="capitalize font-medium">{selectedPayment.reference_type.replace("_", " ")}</span></div>)}
+            {selectedPayment.principal_amount > 0 && (<div className="flex justify-between text-blue-600"><span>Principal</span><span>{formatCurrency(selectedPayment.principal_amount)}</span></div>)}
+            {selectedPayment.interest_amount > 0 && (<div className="flex justify-between text-green-600"><span>Interest (Unlocked)</span><span>{formatCurrency(selectedPayment.interest_amount)}</span></div>)}
+            {selectedPayment.profit_amount !== 0 && (<div className="flex justify-between text-purple-600"><span>Profit Impact</span><span>{formatCurrency(selectedPayment.profit_amount)}</span></div>)}
+            <div className="pt-2 border-t"><div className="flex justify-between text-muted-foreground"><span>Effective On</span><span>{selectedPayment.effective_date ? format(new Date(selectedPayment.effective_date), "dd MMM yyyy") : "—"}</span></div></div>
           </div>
         )}
-
-        {selectedPayment.description && (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Description</span>
-            <span className="font-medium text-right max-w-[60%]">{selectedPayment.description}</span>
-          </div>
-        )}
-
-        {selectedPayment.reference_type && (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Linked To</span>
-            <span className="capitalize font-medium">{selectedPayment.reference_type.replace("_", " ")}</span>
-          </div>
-        )}
-
-        {selectedPayment.principal_amount > 0 && (
-          <div className="flex justify-between text-blue-600">
-            <span>Principal</span>
-            <span>{formatCurrency(selectedPayment.principal_amount)}</span>
-          </div>
-        )}
-
-        {selectedPayment.interest_amount > 0 && (
-          <div className="flex justify-between text-green-600">
-            <span>Interest (Unlocked)</span>
-            <span>{formatCurrency(selectedPayment.interest_amount)}</span>
-          </div>
-        )}
-
-        {selectedPayment.profit_amount !== 0 && (
-          <div className="flex justify-between text-purple-600">
-            <span>Profit Impact</span>
-            <span>{formatCurrency(selectedPayment.profit_amount)}</span>
-          </div>
-        )}
-
-        <div className="pt-2 border-t">
-          <div className="flex justify-between text-muted-foreground">
-            <span>Effective On</span>
-            <span>{selectedPayment.effective_date ? format(new Date(selectedPayment.effective_date), "dd MMM yyyy") : "—"}</span>
-          </div>
-        </div>
-      </div>
-    )}
-  </DialogContent>
-</Dialog>
+      </DataDialog>
 
     </div>
   );

@@ -98,7 +98,7 @@ const MarketplaceVehicle = () => {
         .from("vehicles")
         .select("*")
         .eq("id", vehicleId)
-        .eq("is_public", true)
+        .or("is_public.eq.true,marketplace_status.in.(approved,pending,featured,listed)")
         .single();
 
       if (error || !vehicleData) {
@@ -139,7 +139,7 @@ const MarketplaceVehicle = () => {
         .from("vehicles")
         .select("*")
         .eq("user_id", vehicleData.user_id)
-        .eq("is_public", true)
+        .or("is_public.eq.true,marketplace_status.in.(approved,pending,featured,listed)")
         .eq("status", "in_stock")
         .neq("id", vehicleId)
         .limit(10);
@@ -179,7 +179,7 @@ const MarketplaceVehicle = () => {
         const { data: allVehiclesData } = await supabase
           .from("vehicles")
           .select("*")
-          .eq("is_public", true)
+          .or("is_public.eq.true,marketplace_status.in.(approved,pending,featured,listed)")
           .in("user_id", dealerIds)
           .eq("status", "in_stock")
           .limit(50);

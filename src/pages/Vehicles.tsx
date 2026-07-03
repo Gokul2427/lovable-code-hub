@@ -767,9 +767,16 @@ const deleteExistingImage = async (img: VehicleImage) => {
     toast({ title: "Link copied to clipboard" });
   };
 
-  const filteredVehicles = vehicles.filter((v) =>
-    `${v.brand} ${v.model} ${v.code} ${v.registration_number || ""}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const statusSortOrder: Record<string, number> = { in_stock: 0, reserved: 1, sold: 2 };
+  const filteredVehicles = vehicles
+    .filter((v) =>
+      `${v.brand} ${v.model} ${v.code} ${v.registration_number || ""}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    )
+    .sort(
+      (a, b) => (statusSortOrder[a.status] ?? 9) - (statusSortOrder[b.status] ?? 9)
+    );
 
   const displayedVehicles = filteredVehicles;
   const hasMoreVehicles = false;

@@ -53,7 +53,7 @@ const Dashboard = () => {
     { title: "Avg Sale Value", value: formatCurrency(stats.avgSaleValue), icon: DollarSign, color: "text-chart-4" },
     { title: "Total Expenses", value: formatCurrency(stats.totalExpenses), icon: CreditCard, color: "text-chart-5" },
     { title: "Pending EMIs", value: formatIndianNumber(stats.pendingEMIs), icon: CreditCard, color: "text-chart-3" },
-    { title: "Total Sales", value: formatIndianNumber(stats.totalSalesCount), icon: TrendingUp, color: "text-chart-1" },
+    { title: "Pending Vendor Payments", value: formatCurrency(stats.pendingVendorPayments), icon: Wallet, color: "text-chart-4" },
   ];
 
   if (loading) {

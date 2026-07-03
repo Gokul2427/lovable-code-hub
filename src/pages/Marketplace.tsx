@@ -125,7 +125,7 @@ const Marketplace = () => {
       const { data, error } = await supabase
         .from("vehicles")
         .select("id, brand, model, variant, manufacturing_year, selling_price, odometer_reading, fuel_type, code")
-        .eq("is_public", true)
+        .or("is_public.eq.true,marketplace_status.in.(approved,pending,featured,listed)")
         .in("marketplace_status", ["approved", "pending"])
         .eq("status", "in_stock")
         .order("created_at", { ascending: false })

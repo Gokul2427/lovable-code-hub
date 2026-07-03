@@ -30,7 +30,7 @@ const Wishlist = () => {
         .from("vehicles")
         .select("*")
         .in("id", wishlist)
-        .eq("is_public", true);
+        .or("is_public.eq.true,marketplace_status.in.(approved,pending,featured,listed)");
 
       setVehicles(vehiclesData || []);
 
