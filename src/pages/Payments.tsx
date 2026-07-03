@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerPagination } from "@/hooks/useServerPagination";
 import ScrollLoader from "@/components/ScrollLoader";
@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Eye } from "lucide-react";
+import { Plus, Search, Eye, Loader2 } from "lucide-react";
+import DataDialog from "@/components/DataDialog";
 import { formatIndianNumber, formatCurrency } from "@/lib/formatters";
 import ViewToggle from "@/components/ViewToggle";
 import { useViewMode } from "@/hooks/useViewMode";
@@ -92,7 +93,10 @@ const Payments = () => {
   }
 };
 
-  if (loading) {
+  const hasLoadedOnce = useRef(false);
+  useEffect(() => { if (!loading) hasLoadedOnce.current = true; }, [loading]);
+
+  if (loading && !hasLoadedOnce.current) {
     return <PageSkeleton />;
   }
 
@@ -176,12 +180,17 @@ const Payments = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <CardTitle>Payment List ({payments.length}{hasMorePayments ? "+" : ""})</CardTitle>
-            <ViewToggle viewMode={viewMode} onViewChange={setViewMode} />
+            {loading && hasLoadedOnce.current && (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            )}
           </div>
-        </CardHeader>
-        <CardContent>
-          {viewMode === "list" ? (
+          <ViewToggle viewMode={viewMode} onViewChange={setViewMode} />
+        </div>
+      </CardHeader>
+      <CardContent>
+        {viewMode === "list" ? (
           <Table>
             <TableHeader><TableRow><TableHead>Number</TableHead><TableHead>Date</TableHead><TableHead>Type</TableHead><TableHead>Mode</TableHead><TableHead>Amount</TableHead><TableHead>Action</TableHead></TableRow></TableHeader>
             <TableBody>
