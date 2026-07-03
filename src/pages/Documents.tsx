@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, Download, ExternalLink, FileText, Plus, Upload, Trash2 } from "lucide-react";
+import { Eye, Download, ExternalLink, FileText, Plus, Upload, Trash2, Search } from "lucide-react";
 import ViewToggle from "@/components/ViewToggle";
 import { useViewMode } from "@/hooks/useViewMode";
 import { useToast } from "@/hooks/use-toast";
@@ -75,6 +75,7 @@ const Documents = () => {
   const userId = user?.id;
   const [selectedVehicle, setSelectedVehicle] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [docViewerOpen, setDocViewerOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
 
@@ -222,7 +223,10 @@ const Documents = () => {
   const filteredDocuments = documents.filter(d => {
     const matchesVehicle = selectedVehicle === "all" || d.reference_id === selectedVehicle;
     const matchesCategory = categoryFilter === "all" || d.document_type === categoryFilter;
-    return matchesVehicle && matchesCategory;
+    const matchesSearch =
+      !searchTerm ||
+      (d.document_name || "").toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesVehicle && matchesCategory && matchesSearch;
   });
 
   if (loading) return <PageSkeleton />;
@@ -234,7 +238,16 @@ const Documents = () => {
           <h1 className="text-3xl font-bold">Documents</h1>
           <p className="text-muted-foreground">Manage all documents</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search file name…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8 w-56"
+            />
+          </div>
           <Select value={selectedVehicle} onValueChange={setSelectedVehicle}>
             <SelectTrigger className="w-52"><SelectValue placeholder="Filter by vehicle" /></SelectTrigger>
             <SelectContent className="max-h-64 overflow-y-auto">
