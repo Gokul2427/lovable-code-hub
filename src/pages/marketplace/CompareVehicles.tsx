@@ -36,7 +36,7 @@ const CompareVehicles = () => {
         .from("vehicles")
         .select("*")
         .in("id", ids)
-        .eq("is_public", true);
+        .or("is_public.eq.true,marketplace_status.in.(approved,pending,featured,listed)");
 
       if (!vehiclesData || vehiclesData.length < 2) {
         navigate("/");
