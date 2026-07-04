@@ -504,6 +504,32 @@ const Documents = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* New Folder Dialog */}
+      <Dialog open={newFolderDialogOpen} onOpenChange={setNewFolderDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Create New Folder</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Location: <b>{currentFolder || "All Files (root)"}</b>
+            </p>
+            <div className="space-y-2">
+              <Label>Folder name</Label>
+              <Input
+                autoFocus
+                placeholder="e.g. Registration Docs"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleCreateFolder(); }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewFolderDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateFolder} disabled={!newFolderName.trim()}>Create</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
