@@ -40,7 +40,7 @@ interface DealerInfo {
 }
 
 const formatRupees = (num: number): string => {
-  return '₹ ' + formatIndianNumber(num);
+  return 'Rs. ' + formatIndianNumber(num);
 };
 
 // Parse specs from notes
