@@ -172,6 +172,7 @@ export type Database = {
           document_type: Database["public"]["Enums"]["document_type"]
           document_url: string
           expiry_date: string | null
+          folder_path: string | null
           id: string
           notes: string | null
           reference_id: string
@@ -186,6 +187,7 @@ export type Database = {
           document_type: Database["public"]["Enums"]["document_type"]
           document_url: string
           expiry_date?: string | null
+          folder_path?: string | null
           id?: string
           notes?: string | null
           reference_id: string
@@ -200,6 +202,7 @@ export type Database = {
           document_type?: Database["public"]["Enums"]["document_type"]
           document_url?: string
           expiry_date?: string | null
+          folder_path?: string | null
           id?: string
           notes?: string | null
           reference_id?: string
