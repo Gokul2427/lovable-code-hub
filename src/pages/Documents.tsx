@@ -303,15 +303,60 @@ const Documents = () => {
               ))}
             </SelectContent>
           </Select>
+          <Button variant="outline" onClick={() => setNewFolderDialogOpen(true)} className="gap-2"><FolderPlus className="h-4 w-4" /> New Folder</Button>
           <Button onClick={() => setAddDialogOpen(true)} className="gap-2"><Plus className="h-4 w-4" /> Add Document</Button>
         </div>
       </div>
+
+      {/* Breadcrumbs */}
+      <div className="flex items-center flex-wrap gap-1 text-sm text-muted-foreground">
+        <button
+          type="button"
+          onClick={() => setCurrentFolder("")}
+          className="flex items-center gap-1 hover:text-foreground"
+        >
+          <HomeIcon className="h-3.5 w-3.5" /> All Files
+        </button>
+        {breadcrumbParts.map((part, i) => {
+          const path = breadcrumbParts.slice(0, i + 1).join("/");
+          return (
+            <span key={path} className="flex items-center gap-1">
+              <ChevronRight className="h-3.5 w-3.5" />
+              <button
+                type="button"
+                onClick={() => setCurrentFolder(path)}
+                className="hover:text-foreground"
+              >{part}</button>
+            </span>
+          );
+        })}
+      </div>
+
+      {/* Folder tiles for current level */}
+      {subFolders.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {subFolders.map(name => {
+            const fullPath = currentFolder ? `${currentFolder}/${name}` : name;
+            return (
+              <button
+                key={fullPath}
+                type="button"
+                onClick={() => setCurrentFolder(fullPath)}
+                className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border border-border hover:bg-muted transition"
+              >
+                <Folder className="h-8 w-8 text-primary" />
+                <span className="text-xs font-medium truncate w-full text-center">{name}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <Card className="border border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>
-              Document List ({filteredDocuments.length})
+              {currentFolder ? `${currentFolder} — ` : ""}Files ({filteredDocuments.length})
               {selectedVehicle !== "all" && (
                 <span className="text-sm font-normal text-muted-foreground ml-2">- Filtered by: {getVehicleName(selectedVehicle)}</span>
               )}
