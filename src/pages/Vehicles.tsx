@@ -983,6 +983,14 @@ const deleteExistingImage = async (img: VehicleImage) => {
     });
     return;
   }
+  if (v === "reserved") {
+    toast({
+      title: "Auto-unlisted",
+      description: "Vehicle will be removed from Catalogue & Marketplace while reserved",
+    });
+    setFormData({ ...formData, status: v as any, is_public: false, marketplace_status: "unlisted" as any });
+    return;
+  }
   setFormData({ ...formData, status: v as any });
 }}
 >
