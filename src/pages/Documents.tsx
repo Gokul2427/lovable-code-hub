@@ -79,6 +79,12 @@ const Documents = () => {
   const [docViewerOpen, setDocViewerOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
 
+  // Folder navigation
+  const [currentFolder, setCurrentFolder] = useState<string>(""); // "" = root
+  const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [pendingFolders, setPendingFolders] = useState<string[]>([]); // client-side folders (no files yet)
+
   // Add Document form state
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addForm, setAddForm] = useState({
