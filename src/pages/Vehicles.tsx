@@ -519,6 +519,23 @@ const deleteExistingImage = async (img: VehicleImage) => {
   }
 };
 
+const reorderExistingImages = async (imgs: VehicleImage[], fromIdx: number, toIdx: number) => {
+  if (fromIdx === toIdx) return;
+  const next = [...imgs];
+  const [moved] = next.splice(fromIdx, 1);
+  next.splice(toIdx, 0, moved);
+  try {
+    await Promise.all(
+      next.map((img, i) =>
+        supabase.from("vehicle_images").update({ display_order: i }).eq("id", img.id)
+      )
+    );
+    invalidateVehicles();
+  } catch (err: any) {
+    toast({ title: "Failed to reorder images", description: err.message, variant: "destructive" });
+  }
+};
+
 
 
 
