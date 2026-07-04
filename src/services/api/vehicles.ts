@@ -34,7 +34,7 @@ async function fetchVehiclePageData(userId: string): Promise<VehiclePageData> {
   const docsMap: Record<string, Document[]> = {};
   (docsRes.data || []).forEach((doc) => {
     if (!docsMap[doc.reference_id]) docsMap[doc.reference_id] = [];
-    docsMap[doc.reference_id].push(doc as Document);
+    docsMap[doc.reference_id].push(doc);
   });
 
   return {
