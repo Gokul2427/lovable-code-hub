@@ -1657,6 +1657,15 @@ const deleteExistingImage = async (img: VehicleImage) => {
               <TabsContent value="public" className="space-y-4 mt-4">
                 <Card className="border">
                   <CardContent className="p-4 space-y-4">
+                    {(formData.status === "sold" || formData.status === "reserved") && (
+                      <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-sm">
+                        <span className="font-medium">Auto-unlisted:</span>
+                        <span>
+                          This vehicle is marked <b className="capitalize">{formData.status}</b>. Catalogue and
+                          Marketplace toggles are disabled and will stay off until the status changes back to In Stock.
+                        </span>
+                      </div>
+                    )}
                     {/* Catalogue Toggle */}
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
@@ -1666,9 +1675,10 @@ const deleteExistingImage = async (img: VehicleImage) => {
                         </Label>
                         <p className="text-sm text-muted-foreground">Generate a shareable public page for this vehicle</p>
                       </div>
-                      <Switch 
-                        checked={formData.is_public || false} 
-                        onCheckedChange={(v) => setFormData({ ...formData, is_public: v })} 
+                      <Switch
+                        disabled={formData.status === "sold" || formData.status === "reserved"}
+                        checked={formData.is_public || false}
+                        onCheckedChange={(v) => setFormData({ ...formData, is_public: v })}
                       />
                     </div>
 
@@ -1683,7 +1693,8 @@ const deleteExistingImage = async (img: VehicleImage) => {
                         </Label>
                         <p className="text-sm text-muted-foreground">List this vehicle on the public marketplace</p>
                       </div>
-                      <Switch 
+                      <Switch
+                        disabled={formData.status === "sold" || formData.status === "reserved"}
                         checked={
                           (formData as any).marketplace_status === 'approved' ||
                           (formData as any).marketplace_status === 'featured' ||
@@ -1692,10 +1703,8 @@ const deleteExistingImage = async (img: VehicleImage) => {
                         onCheckedChange={(v) => setFormData({
                           ...formData,
                           marketplace_status: v ? 'approved' : 'unlisted',
-                          // Marketplace queries require is_public=true AND marketplace_status approved/featured.
-                          // Keep them in sync so the toggle alone makes the vehicle visible publicly.
                           is_public: v ? true : (formData as any).is_public,
-                        } as any)} 
+                        } as any)}
                       />
 
                     </div>
