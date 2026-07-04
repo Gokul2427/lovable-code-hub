@@ -211,13 +211,16 @@ const Documents = () => {
         document_url: publicUrl,
         status: "active" as const,
         expiry_date: addForm.expiryDate || null,
-      });
+        folder_path: currentFolder || "",
+      } as any);
       if (error) throw error;
 
       toast({ title: "Document uploaded successfully" });
       setAddDialogOpen(false);
       setAddForm({ documentName: "", documentType: "rc" as string, vehicleId: "", expiryDate: "" });
       setSelectedFile(null);
+      // Remove from pending folders since a real file now exists there
+      if (currentFolder) setPendingFolders(prev => prev.filter(f => f !== currentFolder));
       queryClient.invalidateQueries({ queryKey: ['documents'] });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -226,14 +229,44 @@ const Documents = () => {
     }
   };
 
-  const filteredDocuments = documents.filter(d => {
+  const handleCreateFolder = () => {
+    const name = newFolderName.trim();
+    if (!name) return;
+    const full = currentFolder ? `${currentFolder}/${name}` : name;
+    setPendingFolders(prev => Array.from(new Set([...prev, full])));
+    setNewFolderName("");
+    setNewFolderDialogOpen(false);
+    toast({ title: "Folder created", description: full });
+  };
+
+  // Derive subfolders visible at currentFolder from existing docs + pending folders
+  const allFolderPaths = Array.from(new Set([
+    ...documents.map((d: any) => (d.folder_path as string) || ""),
+    ...pendingFolders,
+  ])).filter(Boolean);
+
+  const subFolders = Array.from(new Set(
+    allFolderPaths
+      .filter(p => (currentFolder ? p.startsWith(currentFolder + "/") : true) && p !== currentFolder)
+      .map(p => {
+        const rest = currentFolder ? p.slice(currentFolder.length + 1) : p;
+        return rest.split("/")[0];
+      })
+      .filter(Boolean)
+  )).sort();
+
+  const filteredDocuments = documents.filter((d: any) => {
+    const folder = (d.folder_path as string) || "";
+    const matchesFolder = folder === currentFolder;
     const matchesVehicle = selectedVehicle === "all" || d.reference_id === selectedVehicle;
     const matchesCategory = categoryFilter === "all" || d.document_type === categoryFilter;
     const matchesSearch =
       !searchTerm ||
       (d.document_name || "").toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesVehicle && matchesCategory && matchesSearch;
+    return matchesFolder && matchesVehicle && matchesCategory && matchesSearch;
   });
+
+  const breadcrumbParts = currentFolder ? currentFolder.split("/") : [];
 
   if (loading) return <PageSkeleton />;
 
