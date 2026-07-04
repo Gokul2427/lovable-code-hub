@@ -1538,7 +1538,6 @@ const reorderExistingImages = async (imgs: VehicleImage[], fromIdx: number, toId
                   </div>
                   );
                 })()}
-                )}
 
                 <div className="space-y-2">
                   <Label>Add New Images</Label>
