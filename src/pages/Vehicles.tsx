@@ -519,6 +519,23 @@ const deleteExistingImage = async (img: VehicleImage) => {
   }
 };
 
+const reorderExistingImages = async (imgs: VehicleImage[], fromIdx: number, toIdx: number) => {
+  if (fromIdx === toIdx) return;
+  const next = [...imgs];
+  const [moved] = next.splice(fromIdx, 1);
+  next.splice(toIdx, 0, moved);
+  try {
+    await Promise.all(
+      next.map((img, i) =>
+        supabase.from("vehicle_images").update({ display_order: i }).eq("id", img.id)
+      )
+    );
+    invalidateVehicles();
+  } catch (err: any) {
+    toast({ title: "Failed to reorder images", description: err.message, variant: "destructive" });
+  }
+};
+
 
 
 
@@ -981,6 +998,14 @@ const deleteExistingImage = async (img: VehicleImage) => {
       description: "Vehicle can be sold only via Sales",
       variant: "destructive",
     });
+    return;
+  }
+  if (v === "reserved") {
+    toast({
+      title: "Auto-unlisted",
+      description: "Vehicle will be removed from Catalogue & Marketplace while reserved",
+    });
+    setFormData({ ...formData, status: v as any, is_public: false, marketplace_status: "unlisted" as any });
     return;
   }
   setFormData({ ...formData, status: v as any });
@@ -1457,46 +1482,62 @@ const deleteExistingImage = async (img: VehicleImage) => {
 
               {/* Documents Tab */}
               <TabsContent value="documents" className="space-y-4 mt-4">
-                {selectedVehicle && existingImages.length > 0 && (
+                {selectedVehicle && existingImages.length > 0 && (() => {
+                  const sortedImages = [...existingImages].sort(
+                    (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)
+                  );
+                  return (
                   <div className="space-y-2">
-                    <Label>Existing Images ({existingImages.length})</Label>
+                    <Label>Existing Images ({sortedImages.length}) — drag to reorder</Label>
                     <div className="flex flex-wrap gap-2">
-                      {existingImages.map((img) => (
-  <div key={img.id} className="relative group">
+                      {sortedImages.map((img, idx) => (
+  <div
+    key={img.id}
+    draggable
+    onDragStart={(e) => {
+      e.dataTransfer.setData("text/plain", String(idx));
+      e.dataTransfer.effectAllowed = "move";
+    }}
+    onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
+    onDrop={(e) => {
+      e.preventDefault();
+      const from = parseInt(e.dataTransfer.getData("text/plain"), 10);
+      if (!Number.isNaN(from)) reorderExistingImages(sortedImages, from, idx);
+    }}
+    className="relative group cursor-move"
+    title="Drag to reorder"
+  >
     <img
       src={img.image_url}
       alt=""
       className="h-16 w-20 object-cover rounded border border-border"
     />
+    <span className="absolute bottom-0 left-0 bg-black/60 text-white text-[10px] px-1 rounded-tr">#{idx + 1}</span>
 
-    {/* Primary badge */}
     {img.is_primary && (
-      <Badge className="absolute -top-2 -left-2 text-xs">
-        Primary
-      </Badge>
+      <Badge className="absolute -top-2 -left-2 text-xs">Primary</Badge>
     )}
 
-    {/* ❌ Delete button */}
     <Button
-  type="button" // 🔥 VERY IMPORTANT
-  size="icon"
-  variant="destructive"
-  className="absolute -top-2 -right-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition"
-  onClick={(e) => {
-    e.preventDefault();     // ⛔ stop form submit
-    e.stopPropagation();    // ⛔ stop dialog events
-    deleteExistingImage(img);
-  }}
->
-  <X className="h-3 w-3" />
-</Button>
-
+      type="button"
+      size="icon"
+      variant="destructive"
+      className="absolute -top-2 -right-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        deleteExistingImage(img);
+      }}
+    >
+      <X className="h-3 w-3" />
+    </Button>
   </div>
 ))}
 
                     </div>
                   </div>
-                )}
+                  );
+                })()}
 
                 <div className="space-y-2">
                   <Label>Add New Images</Label>
@@ -1649,6 +1690,15 @@ const deleteExistingImage = async (img: VehicleImage) => {
               <TabsContent value="public" className="space-y-4 mt-4">
                 <Card className="border">
                   <CardContent className="p-4 space-y-4">
+                    {(formData.status === "sold" || formData.status === "reserved") && (
+                      <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-sm">
+                        <span className="font-medium">Auto-unlisted:</span>
+                        <span>
+                          This vehicle is marked <b className="capitalize">{formData.status}</b>. Catalogue and
+                          Marketplace toggles are disabled and will stay off until the status changes back to In Stock.
+                        </span>
+                      </div>
+                    )}
                     {/* Catalogue Toggle */}
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
@@ -1658,9 +1708,10 @@ const deleteExistingImage = async (img: VehicleImage) => {
                         </Label>
                         <p className="text-sm text-muted-foreground">Generate a shareable public page for this vehicle</p>
                       </div>
-                      <Switch 
-                        checked={formData.is_public || false} 
-                        onCheckedChange={(v) => setFormData({ ...formData, is_public: v })} 
+                      <Switch
+                        disabled={formData.status === "sold" || formData.status === "reserved"}
+                        checked={formData.is_public || false}
+                        onCheckedChange={(v) => setFormData({ ...formData, is_public: v })}
                       />
                     </div>
 
@@ -1675,7 +1726,8 @@ const deleteExistingImage = async (img: VehicleImage) => {
                         </Label>
                         <p className="text-sm text-muted-foreground">List this vehicle on the public marketplace</p>
                       </div>
-                      <Switch 
+                      <Switch
+                        disabled={formData.status === "sold" || formData.status === "reserved"}
                         checked={
                           (formData as any).marketplace_status === 'approved' ||
                           (formData as any).marketplace_status === 'featured' ||
@@ -1684,10 +1736,8 @@ const deleteExistingImage = async (img: VehicleImage) => {
                         onCheckedChange={(v) => setFormData({
                           ...formData,
                           marketplace_status: v ? 'approved' : 'unlisted',
-                          // Marketplace queries require is_public=true AND marketplace_status approved/featured.
-                          // Keep them in sync so the toggle alone makes the vehicle visible publicly.
                           is_public: v ? true : (formData as any).is_public,
-                        } as any)} 
+                        } as any)}
                       />
 
                     </div>

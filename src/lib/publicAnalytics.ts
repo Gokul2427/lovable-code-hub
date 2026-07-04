@@ -49,22 +49,46 @@ let eventBuffer: Array<{
 }> = [];
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
-const flushEvents = async () => {
+const SUPABASE_URL = "https://edmssetawhjpeurzwadc.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkbXNzZXRhd2hqcGV1cnp3YWRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2Mzk2NDUsImV4cCI6MjA5MzIxNTY0NX0.7xwOvj54_6Uaa8wa4GT_S8JkSpJSVhfwW79sBxH3c1Q";
+
+const beaconFlush = (batch: typeof eventBuffer): boolean => {
+  if (typeof navigator === "undefined" || !navigator.sendBeacon) return false;
+  try {
+    const blob = new Blob([JSON.stringify(batch)], { type: "application/json" });
+    // PostgREST accepts unauthenticated inserts when RLS allows; include apikey via URL param not possible with beacon,
+    // so fall through to fetch on failure.
+    const url = `${SUPABASE_URL}/rest/v1/public_page_events?apikey=${SUPABASE_ANON}`;
+    return navigator.sendBeacon(url, blob);
+  } catch {
+    return false;
+  }
+};
+
+const flushEvents = async (viaBeacon = false) => {
   if (eventBuffer.length === 0) return;
   const batch = [...eventBuffer];
   eventBuffer = [];
-  
+
+  if (viaBeacon && beaconFlush(batch)) return;
+
   try {
-    const { error } = await supabase
-      .from("public_page_events")
-      .insert(batch as any);
-    if (error) {
-      console.error("❌ Analytics batch insert failed:", error);
-    }
+    const { error } = await supabase.from("public_page_events").insert(batch as any);
+    if (error) console.error("❌ Analytics batch insert failed:", error);
   } catch (e) {
     console.error("❌ Analytics exception:", e);
   }
 };
+
+// Flush on page hide / tab close so buffered events aren't lost on navigation.
+if (typeof window !== "undefined") {
+  const onHide = () => flushEvents(true);
+  window.addEventListener("pagehide", onHide);
+  window.addEventListener("beforeunload", onHide);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushEvents(true);
+  });
+}
 
 export const trackPublicEvent = async ({
   eventType,
@@ -80,13 +104,14 @@ export const trackPublicEvent = async ({
     session_id: getSessionId(),
   });
 
-  // Flush after 2 seconds of inactivity (batches rapid events)
+  // Flush after 800ms of inactivity (batches rapid events but keeps events fresh).
   if (flushTimer) clearTimeout(flushTimer);
-  flushTimer = setTimeout(flushEvents, 2000);
+  flushTimer = setTimeout(() => flushEvents(false), 800);
 
-  // Flush immediately if buffer gets large
-  if (eventBuffer.length >= 10) {
+  // Flush immediately for high-signal events or when buffer gets large
+  if (eventBuffer.length >= 5 || eventType === "cta_call" || eventType === "cta_whatsapp" || eventType === "form_opened") {
     if (flushTimer) clearTimeout(flushTimer);
-    flushEvents();
+    flushEvents(false);
   }
 };
+

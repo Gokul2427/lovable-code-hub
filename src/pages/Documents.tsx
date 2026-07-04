@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, Download, ExternalLink, FileText, Plus, Upload, Trash2, Search } from "lucide-react";
+import { Eye, Download, ExternalLink, FileText, Plus, Upload, Trash2, Search, Folder, FolderPlus, ChevronRight, Home as HomeIcon } from "lucide-react";
 import ViewToggle from "@/components/ViewToggle";
 import { useViewMode } from "@/hooks/useViewMode";
 import { useToast } from "@/hooks/use-toast";
@@ -78,6 +78,12 @@ const Documents = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [docViewerOpen, setDocViewerOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
+
+  // Folder navigation
+  const [currentFolder, setCurrentFolder] = useState<string>(""); // "" = root
+  const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [pendingFolders, setPendingFolders] = useState<string[]>([]); // client-side folders (no files yet)
 
   // Add Document form state
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -205,13 +211,16 @@ const Documents = () => {
         document_url: publicUrl,
         status: "active" as const,
         expiry_date: addForm.expiryDate || null,
-      });
+        folder_path: currentFolder || "",
+      } as any);
       if (error) throw error;
 
       toast({ title: "Document uploaded successfully" });
       setAddDialogOpen(false);
       setAddForm({ documentName: "", documentType: "rc" as string, vehicleId: "", expiryDate: "" });
       setSelectedFile(null);
+      // Remove from pending folders since a real file now exists there
+      if (currentFolder) setPendingFolders(prev => prev.filter(f => f !== currentFolder));
       queryClient.invalidateQueries({ queryKey: ['documents'] });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -220,14 +229,44 @@ const Documents = () => {
     }
   };
 
-  const filteredDocuments = documents.filter(d => {
+  const handleCreateFolder = () => {
+    const name = newFolderName.trim();
+    if (!name) return;
+    const full = currentFolder ? `${currentFolder}/${name}` : name;
+    setPendingFolders(prev => Array.from(new Set([...prev, full])));
+    setNewFolderName("");
+    setNewFolderDialogOpen(false);
+    toast({ title: "Folder created", description: full });
+  };
+
+  // Derive subfolders visible at currentFolder from existing docs + pending folders
+  const allFolderPaths = Array.from(new Set([
+    ...documents.map((d: any) => (d.folder_path as string) || ""),
+    ...pendingFolders,
+  ])).filter(Boolean);
+
+  const subFolders = Array.from(new Set(
+    allFolderPaths
+      .filter(p => (currentFolder ? p.startsWith(currentFolder + "/") : true) && p !== currentFolder)
+      .map(p => {
+        const rest = currentFolder ? p.slice(currentFolder.length + 1) : p;
+        return rest.split("/")[0];
+      })
+      .filter(Boolean)
+  )).sort();
+
+  const filteredDocuments = documents.filter((d: any) => {
+    const folder = (d.folder_path as string) || "";
+    const matchesFolder = folder === currentFolder;
     const matchesVehicle = selectedVehicle === "all" || d.reference_id === selectedVehicle;
     const matchesCategory = categoryFilter === "all" || d.document_type === categoryFilter;
     const matchesSearch =
       !searchTerm ||
       (d.document_name || "").toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesVehicle && matchesCategory && matchesSearch;
+    return matchesFolder && matchesVehicle && matchesCategory && matchesSearch;
   });
+
+  const breadcrumbParts = currentFolder ? currentFolder.split("/") : [];
 
   if (loading) return <PageSkeleton />;
 
@@ -264,15 +303,60 @@ const Documents = () => {
               ))}
             </SelectContent>
           </Select>
+          <Button variant="outline" onClick={() => setNewFolderDialogOpen(true)} className="gap-2"><FolderPlus className="h-4 w-4" /> New Folder</Button>
           <Button onClick={() => setAddDialogOpen(true)} className="gap-2"><Plus className="h-4 w-4" /> Add Document</Button>
         </div>
       </div>
+
+      {/* Breadcrumbs */}
+      <div className="flex items-center flex-wrap gap-1 text-sm text-muted-foreground">
+        <button
+          type="button"
+          onClick={() => setCurrentFolder("")}
+          className="flex items-center gap-1 hover:text-foreground"
+        >
+          <HomeIcon className="h-3.5 w-3.5" /> All Files
+        </button>
+        {breadcrumbParts.map((part, i) => {
+          const path = breadcrumbParts.slice(0, i + 1).join("/");
+          return (
+            <span key={path} className="flex items-center gap-1">
+              <ChevronRight className="h-3.5 w-3.5" />
+              <button
+                type="button"
+                onClick={() => setCurrentFolder(path)}
+                className="hover:text-foreground"
+              >{part}</button>
+            </span>
+          );
+        })}
+      </div>
+
+      {/* Folder tiles for current level */}
+      {subFolders.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {subFolders.map(name => {
+            const fullPath = currentFolder ? `${currentFolder}/${name}` : name;
+            return (
+              <button
+                key={fullPath}
+                type="button"
+                onClick={() => setCurrentFolder(fullPath)}
+                className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border border-border hover:bg-muted transition"
+              >
+                <Folder className="h-8 w-8 text-primary" />
+                <span className="text-xs font-medium truncate w-full text-center">{name}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <Card className="border border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>
-              Document List ({filteredDocuments.length})
+              {currentFolder ? `${currentFolder} — ` : ""}Files ({filteredDocuments.length})
               {selectedVehicle !== "all" && (
                 <span className="text-sm font-normal text-muted-foreground ml-2">- Filtered by: {getVehicleName(selectedVehicle)}</span>
               )}
@@ -417,6 +501,32 @@ const Documents = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleAddDocument} disabled={uploading}>{uploading ? "Uploading..." : "Upload Document"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Folder Dialog */}
+      <Dialog open={newFolderDialogOpen} onOpenChange={setNewFolderDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Create New Folder</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Location: <b>{currentFolder || "All Files (root)"}</b>
+            </p>
+            <div className="space-y-2">
+              <Label>Folder name</Label>
+              <Input
+                autoFocus
+                placeholder="e.g. Registration Docs"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleCreateFolder(); }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewFolderDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateFolder} disabled={!newFolderName.trim()}>Create</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
