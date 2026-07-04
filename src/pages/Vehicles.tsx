@@ -1482,45 +1482,62 @@ const reorderExistingImages = async (imgs: VehicleImage[], fromIdx: number, toId
 
               {/* Documents Tab */}
               <TabsContent value="documents" className="space-y-4 mt-4">
-                {selectedVehicle && existingImages.length > 0 && (
+                {selectedVehicle && existingImages.length > 0 && (() => {
+                  const sortedImages = [...existingImages].sort(
+                    (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)
+                  );
+                  return (
                   <div className="space-y-2">
-                    <Label>Existing Images ({existingImages.length})</Label>
+                    <Label>Existing Images ({sortedImages.length}) — drag to reorder</Label>
                     <div className="flex flex-wrap gap-2">
-                      {existingImages.map((img) => (
-  <div key={img.id} className="relative group">
+                      {sortedImages.map((img, idx) => (
+  <div
+    key={img.id}
+    draggable
+    onDragStart={(e) => {
+      e.dataTransfer.setData("text/plain", String(idx));
+      e.dataTransfer.effectAllowed = "move";
+    }}
+    onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
+    onDrop={(e) => {
+      e.preventDefault();
+      const from = parseInt(e.dataTransfer.getData("text/plain"), 10);
+      if (!Number.isNaN(from)) reorderExistingImages(sortedImages, from, idx);
+    }}
+    className="relative group cursor-move"
+    title="Drag to reorder"
+  >
     <img
       src={img.image_url}
       alt=""
       className="h-16 w-20 object-cover rounded border border-border"
     />
+    <span className="absolute bottom-0 left-0 bg-black/60 text-white text-[10px] px-1 rounded-tr">#{idx + 1}</span>
 
-    {/* Primary badge */}
     {img.is_primary && (
-      <Badge className="absolute -top-2 -left-2 text-xs">
-        Primary
-      </Badge>
+      <Badge className="absolute -top-2 -left-2 text-xs">Primary</Badge>
     )}
 
-    {/* ❌ Delete button */}
     <Button
-  type="button" // 🔥 VERY IMPORTANT
-  size="icon"
-  variant="destructive"
-  className="absolute -top-2 -right-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition"
-  onClick={(e) => {
-    e.preventDefault();     // ⛔ stop form submit
-    e.stopPropagation();    // ⛔ stop dialog events
-    deleteExistingImage(img);
-  }}
->
-  <X className="h-3 w-3" />
-</Button>
-
+      type="button"
+      size="icon"
+      variant="destructive"
+      className="absolute -top-2 -right-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        deleteExistingImage(img);
+      }}
+    >
+      <X className="h-3 w-3" />
+    </Button>
   </div>
 ))}
 
                     </div>
                   </div>
+                  );
+                })()}
                 )}
 
                 <div className="space-y-2">
