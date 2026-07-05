@@ -56,12 +56,31 @@ const labelFor = (row: AuditRow) => {
   );
 };
 
+const HIDDEN_KEYS = new Set(["id", "user_id", "created_at", "updated_at"]);
+
+const PrettyRecord = ({ data }: { data: Record<string, any> }) => {
+  const entries = Object.entries(data).filter(([k, v]) => !HIDDEN_KEYS.has(k) && v !== null && v !== "");
+  if (entries.length === 0) return <p className="text-xs text-muted-foreground p-3">No fields</p>;
+  return (
+    <div className="border rounded-lg divide-y">
+      {entries.map(([k, v]) => (
+        <div key={k} className="p-3 grid grid-cols-[160px_1fr] gap-3 text-xs items-start">
+          <div className="font-medium text-muted-foreground capitalize">{k.replace(/_/g, " ")}</div>
+          <div className="break-words">{formatVal(v)}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function AuditLogs() {
   const { user } = useAuth();
+  const { viewMode, setViewMode } = useViewMode("audit-logs");
   const [tableFilter, setTableFilter] = useState<string>("all");
   const [actionFilter, setActionFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<AuditRow | null>(null);
+
 
   const { data: logs, isLoading } = useQuery({
     queryKey: ["audit-logs", user?.id],
