@@ -1079,6 +1079,37 @@ const Leads = () => {
                   </CardContent>
                 </Card>
 
+                {(selectedLead.follow_up_date || selectedLead.last_contact_date) && (() => {
+                  const missed = selectedLead.follow_up_date &&
+                    new Date(selectedLead.follow_up_date) < new Date(new Date().setHours(0,0,0,0)) &&
+                    !["won","lost","converted"].includes(selectedLead.status);
+                  return (
+                    <Card className={missed ? "border-red-300 bg-red-50 dark:bg-red-950/20" : ""}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className={`text-lg flex items-center gap-2 ${missed ? "text-red-700 dark:text-red-400" : ""}`}>
+                          <CalendarCheck className="h-5 w-5" />
+                          Follow-Up {missed && <Badge variant="destructive" className="text-[10px]">Missed</Badge>}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-3 sm:px-6">
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase">Next Follow-Up</p>
+                          <p className={`font-medium ${missed ? "text-red-700 dark:text-red-400" : ""}`}>
+                            {selectedLead.follow_up_date ? format(new Date(selectedLead.follow_up_date), "dd MMM yyyy") : "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase">Last Contact</p>
+                          <p className="font-medium">
+                            {selectedLead.last_contact_date ? format(new Date(selectedLead.last_contact_date), "dd MMM yyyy") : "-"}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
+
+
                 {selectedLead.notes && (
                   <Card>
                     <CardHeader className="pb-2">
