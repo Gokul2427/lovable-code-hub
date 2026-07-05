@@ -129,10 +129,11 @@ export default function AuditLogs() {
             Complete history of every create, update, and delete in your account.
           </p>
         </div>
-      </div>
+        <div className="flex gap-1 rounded-lg border p-0.5 self-start">
+          <Button size="sm" variant={viewMode === "list" ? "default" : "ghost"} onClick={() => setViewMode("list")} className="h-8 gap-1.5"><ListIcon className="h-3.5 w-3.5" /> List</Button>
+          <Button size="sm" variant={viewMode === "grid" ? "default" : "ghost"} onClick={() => setViewMode("grid")} className="h-8 gap-1.5"><LayoutGrid className="h-3.5 w-3.5" /> Grid</Button>
+        </div>
 
-      <Card>
-        <CardContent className="p-3 flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
