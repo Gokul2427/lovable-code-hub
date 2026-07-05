@@ -690,7 +690,10 @@ const Leads = () => {
                             )}
                             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                               <span className="font-mono">{lead.lead_number}</span>
-                              {lead.follow_up_date && <span>Follow: {format(new Date(lead.follow_up_date), "dd MMM")}</span>}
+                              {lead.follow_up_date && (() => {
+                                const missed = new Date(lead.follow_up_date) < new Date(new Date().setHours(0,0,0,0)) && !["won","lost","converted"].includes(lead.status);
+                                return <span className={missed ? "text-red-600 font-semibold" : ""}>{missed ? "Missed: " : "Follow: "}{format(new Date(lead.follow_up_date), "dd MMM")}</span>;
+                              })()}
                             </div>
                           </CardContent>
                         </Card>
