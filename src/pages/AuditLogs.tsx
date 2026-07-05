@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
-import { Activity, Search, Eye, FileText } from "lucide-react";
+import { Activity, Search, Eye, FileText, LayoutGrid, List as ListIcon } from "lucide-react";
 import { format } from "date-fns";
+import { useViewMode } from "@/hooks/useViewMode";
+
 
 interface AuditRow {
   id: string;
