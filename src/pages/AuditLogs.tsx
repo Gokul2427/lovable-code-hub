@@ -185,6 +185,35 @@ export default function AuditLogs() {
             <div className="p-10 text-center text-muted-foreground text-sm">
               No audit activity yet.
             </div>
+          ) : viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-3">
+              {filtered.map((row) => (
+                <button
+                  key={row.id}
+                  onClick={() => setSelected(row)}
+                  className="text-left rounded-lg border p-3 hover:shadow-sm hover:bg-muted/40 transition-colors flex flex-col gap-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="outline" className={`${ACTION_COLORS[row.action]} shrink-0`}>
+                      {row.action === "INSERT" ? "Created" : row.action === "UPDATE" ? "Updated" : "Deleted"}
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground">
+                      {format(new Date(row.created_at), "dd MMM, HH:mm")}
+                    </span>
+                  </div>
+                  <div className="text-sm font-medium truncate">{labelFor(row)}</div>
+                  <div className="text-xs text-muted-foreground capitalize truncate">
+                    {row.table_name.replace(/_/g, " ")}
+                  </div>
+                  {row.action === "UPDATE" && row.changed_fields && (
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      Changed: {Object.keys(row.changed_fields).slice(0, 3).join(", ")}
+                      {Object.keys(row.changed_fields).length > 3 ? "…" : ""}
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           ) : (
             <div className="divide-y">
               {filtered.map((row) => (
@@ -220,6 +249,7 @@ export default function AuditLogs() {
               ))}
             </div>
           )}
+
         </CardContent>
       </Card>
 
