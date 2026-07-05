@@ -239,6 +239,58 @@ const Documents = () => {
     toast({ title: "Folder created", description: full });
   };
 
+  const handleRenameFolder = async (oldPath: string) => {
+    const newName = window.prompt("Rename folder", oldPath.split("/").pop() || "");
+    if (!newName || !newName.trim()) return;
+    const parent = oldPath.includes("/") ? oldPath.slice(0, oldPath.lastIndexOf("/")) : "";
+    const newPath = parent ? `${parent}/${newName.trim()}` : newName.trim();
+    if (newPath === oldPath) return;
+    try {
+      // Update every document whose folder_path starts with oldPath
+      const affected = documents.filter((d: any) => {
+        const fp = (d.folder_path as string) || "";
+        return fp === oldPath || fp.startsWith(oldPath + "/");
+      });
+      await Promise.all(affected.map((d: any) => {
+        const fp = (d.folder_path as string) || "";
+        const updated = newPath + fp.slice(oldPath.length);
+        return supabase.from("documents").update({ folder_path: updated } as any).eq("id", d.id);
+      }));
+      setPendingFolders(prev => prev.map(p => (p === oldPath || p.startsWith(oldPath + "/") ? newPath + p.slice(oldPath.length) : p)));
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      toast({ title: "Folder renamed" });
+    } catch (err: any) {
+      toast({ title: "Rename failed", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleDeleteFolder = async (path: string) => {
+    const affected = documents.filter((d: any) => {
+      const fp = (d.folder_path as string) || "";
+      return fp === path || fp.startsWith(path + "/");
+    });
+    const msg = affected.length
+      ? `Delete folder "${path}" and move ${affected.length} file(s) to the parent folder?`
+      : `Delete empty folder "${path}"?`;
+    if (!window.confirm(msg)) return;
+    try {
+      const parent = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
+      await Promise.all(affected.map((d: any) => {
+        const fp = (d.folder_path as string) || "";
+        // Move to parent, keeping any nested sub-structure below the deleted folder
+        const rest = fp === path ? "" : fp.slice(path.length + 1);
+        const updated = parent ? (rest ? `${parent}/${rest}` : parent) : rest;
+        return supabase.from("documents").update({ folder_path: updated } as any).eq("id", d.id);
+      }));
+      setPendingFolders(prev => prev.filter(p => p !== path && !p.startsWith(path + "/")));
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      toast({ title: "Folder deleted", description: affected.length ? `${affected.length} file(s) moved` : undefined });
+    } catch (err: any) {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    }
+  };
+
+
   // Derive subfolders visible at currentFolder from existing docs + pending folders
   const allFolderPaths = Array.from(new Set([
     ...documents.map((d: any) => (d.folder_path as string) || ""),
