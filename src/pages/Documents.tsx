@@ -390,19 +390,35 @@ const Documents = () => {
           {subFolders.map(name => {
             const fullPath = currentFolder ? `${currentFolder}/${name}` : name;
             return (
-              <button
+              <div
                 key={fullPath}
-                type="button"
+                className="relative group flex flex-col items-center justify-center gap-2 p-4 rounded-lg border border-border hover:bg-muted transition cursor-pointer"
                 onClick={() => setCurrentFolder(fullPath)}
-                className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border border-border hover:bg-muted transition"
               >
                 <Folder className="h-8 w-8 text-primary" />
                 <span className="text-xs font-medium truncate w-full text-center">{name}</span>
-              </button>
+                <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition">
+                  <Button
+                    type="button" size="icon" variant="ghost" className="h-6 w-6"
+                    title="Rename folder"
+                    onClick={(e) => { e.stopPropagation(); handleRenameFolder(fullPath); }}
+                  >
+                    <FileText className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    type="button" size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive"
+                    title="Delete folder"
+                    onClick={(e) => { e.stopPropagation(); handleDeleteFolder(fullPath); }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
             );
           })}
         </div>
       )}
+
 
       <Card className="border border-border">
         <CardHeader>
