@@ -323,7 +323,8 @@ const PublicVehiclePage = () => {
           {(dealer?.dealer_phone || dealer?.whatsapp_number) && (
             <div className="hidden lg:flex gap-2">
               {dealer?.dealer_phone && (
-                <a href={`tel:${dealer.dealer_phone}`}>
+                <a href={`tel:${dealer.dealer_phone}`}
+                  onClick={() => trackPublicEvent({ eventType: "cta_call", dealerUserId: vehicle.user_id, publicPageId: dealer?.public_page_id || "", vehicleId: vehicle.id })}>
                   <Button variant="outline" size="sm" className="gap-2"><Phone className="h-4 w-4" /> Call</Button>
                 </a>
               )}
