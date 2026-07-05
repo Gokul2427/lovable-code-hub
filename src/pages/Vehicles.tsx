@@ -1671,10 +1671,11 @@ const reorderExistingImages = async (imgs: VehicleImage[], fromIdx: number, toId
     </Select>
 
     <Button
+      type="button"
       size="icon"
       variant="ghost"
       className="h-6 w-6"
-      onClick={() => removePendingDoc(i)}
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); removePendingDoc(i); }}
     >
       <X className="h-3 w-3" />
     </Button>
