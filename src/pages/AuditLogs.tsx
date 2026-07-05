@@ -305,20 +305,17 @@ export default function AuditLogs() {
                 {selected.action === "INSERT" && selected.new_data && (
                   <div>
                     <div className="font-semibold mb-2">Created with</div>
-                    <pre className="bg-muted rounded-lg p-3 text-[11px] overflow-auto max-h-80">
-                      {JSON.stringify(selected.new_data, null, 2)}
-                    </pre>
+                    <PrettyRecord data={selected.new_data} />
                   </div>
                 )}
 
                 {selected.action === "DELETE" && selected.old_data && (
                   <div>
                     <div className="font-semibold mb-2">Deleted data</div>
-                    <pre className="bg-muted rounded-lg p-3 text-[11px] overflow-auto max-h-80">
-                      {JSON.stringify(selected.old_data, null, 2)}
-                    </pre>
+                    <PrettyRecord data={selected.old_data} />
                   </div>
                 )}
+
               </div>
             )}
           </ScrollArea>
