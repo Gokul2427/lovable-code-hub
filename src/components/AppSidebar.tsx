@@ -194,6 +194,7 @@ export function AppSidebar() {
 
   useEffect(() => {
     if (location.pathname === "/leads" && user) {
+      // Give the user enough time to actually see the red badge before clearing it.
       const markAsViewed = async () => {
         await supabase
           .from("leads")
@@ -201,34 +202,15 @@ export function AppSidebar() {
           .eq("user_id", user.id)
           .eq("status", "new")
           .is("last_viewed_at", null);
-        
+
         fetchNewLeadsCount();
       };
-      
-      const timeout = setTimeout(markAsViewed, 1000);
+
+      const timeout = setTimeout(markAsViewed, 4000);
       return () => clearTimeout(timeout);
     }
   }, [location.pathname, fetchNewLeadsCount, user]);
 
-  // Mark marketplace leads as viewed when visiting marketplace hub
-  useEffect(() => {
-    if (location.pathname === "/marketplace-hub" && user) {
-      const markMarketplaceAsViewed = async () => {
-        await supabase
-          .from("leads")
-          .update({ last_viewed_at: new Date().toISOString() })
-          .eq("user_id", user.id)
-          .eq("source", "marketplace")
-          .eq("status", "new")
-          .is("last_viewed_at", null);
-        
-        fetchNewLeadsCount();
-      };
-      
-      const timeout = setTimeout(markMarketplaceAsViewed, 1000);
-      return () => clearTimeout(timeout);
-    }
-  }, [location.pathname, fetchNewLeadsCount, user]);
 
   const mainMenuItems = useMemo(() => [
     { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard", badge: 0 },
