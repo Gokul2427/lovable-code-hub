@@ -525,7 +525,8 @@ const PublicVehiclePage = () => {
                     {dealer.dealer_phone && (
                       <div className={`flex items-center gap-2 ${textSecondary}`}>
                         <Phone className={`h-4 w-4 ${accent.text}`} />
-                        <a href={`tel:${dealer.dealer_phone}`} className={`text-sm hover:${accent.text}`}>{dealer.dealer_phone}</a>
+                        <a href={`tel:${dealer.dealer_phone}`} className={`text-sm hover:${accent.text}`}
+                          onClick={() => trackPublicEvent({ eventType: "cta_call", dealerUserId: vehicle.user_id, publicPageId: dealer?.public_page_id || "", vehicleId: vehicle.id })}>{dealer.dealer_phone}</a>
                       </div>
                     )}
                     {dealer.dealer_email && (
