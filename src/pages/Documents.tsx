@@ -239,6 +239,58 @@ const Documents = () => {
     toast({ title: "Folder created", description: full });
   };
 
+  const handleRenameFolder = async (oldPath: string) => {
+    const newName = window.prompt("Rename folder", oldPath.split("/").pop() || "");
+    if (!newName || !newName.trim()) return;
+    const parent = oldPath.includes("/") ? oldPath.slice(0, oldPath.lastIndexOf("/")) : "";
+    const newPath = parent ? `${parent}/${newName.trim()}` : newName.trim();
+    if (newPath === oldPath) return;
+    try {
+      // Update every document whose folder_path starts with oldPath
+      const affected = documents.filter((d: any) => {
+        const fp = (d.folder_path as string) || "";
+        return fp === oldPath || fp.startsWith(oldPath + "/");
+      });
+      await Promise.all(affected.map((d: any) => {
+        const fp = (d.folder_path as string) || "";
+        const updated = newPath + fp.slice(oldPath.length);
+        return supabase.from("documents").update({ folder_path: updated } as any).eq("id", d.id);
+      }));
+      setPendingFolders(prev => prev.map(p => (p === oldPath || p.startsWith(oldPath + "/") ? newPath + p.slice(oldPath.length) : p)));
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      toast({ title: "Folder renamed" });
+    } catch (err: any) {
+      toast({ title: "Rename failed", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleDeleteFolder = async (path: string) => {
+    const affected = documents.filter((d: any) => {
+      const fp = (d.folder_path as string) || "";
+      return fp === path || fp.startsWith(path + "/");
+    });
+    const msg = affected.length
+      ? `Delete folder "${path}" and move ${affected.length} file(s) to the parent folder?`
+      : `Delete empty folder "${path}"?`;
+    if (!window.confirm(msg)) return;
+    try {
+      const parent = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
+      await Promise.all(affected.map((d: any) => {
+        const fp = (d.folder_path as string) || "";
+        // Move to parent, keeping any nested sub-structure below the deleted folder
+        const rest = fp === path ? "" : fp.slice(path.length + 1);
+        const updated = parent ? (rest ? `${parent}/${rest}` : parent) : rest;
+        return supabase.from("documents").update({ folder_path: updated } as any).eq("id", d.id);
+      }));
+      setPendingFolders(prev => prev.filter(p => p !== path && !p.startsWith(path + "/")));
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      toast({ title: "Folder deleted", description: affected.length ? `${affected.length} file(s) moved` : undefined });
+    } catch (err: any) {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    }
+  };
+
+
   // Derive subfolders visible at currentFolder from existing docs + pending folders
   const allFolderPaths = Array.from(new Set([
     ...documents.map((d: any) => (d.folder_path as string) || ""),
@@ -338,19 +390,35 @@ const Documents = () => {
           {subFolders.map(name => {
             const fullPath = currentFolder ? `${currentFolder}/${name}` : name;
             return (
-              <button
+              <div
                 key={fullPath}
-                type="button"
+                className="relative group flex flex-col items-center justify-center gap-2 p-4 rounded-lg border border-border hover:bg-muted transition cursor-pointer"
                 onClick={() => setCurrentFolder(fullPath)}
-                className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border border-border hover:bg-muted transition"
               >
                 <Folder className="h-8 w-8 text-primary" />
                 <span className="text-xs font-medium truncate w-full text-center">{name}</span>
-              </button>
+                <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition">
+                  <Button
+                    type="button" size="icon" variant="ghost" className="h-6 w-6"
+                    title="Rename folder"
+                    onClick={(e) => { e.stopPropagation(); handleRenameFolder(fullPath); }}
+                  >
+                    <FileText className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    type="button" size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive"
+                    title="Delete folder"
+                    onClick={(e) => { e.stopPropagation(); handleDeleteFolder(fullPath); }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
             );
           })}
         </div>
       )}
+
 
       <Card className="border border-border">
         <CardHeader>

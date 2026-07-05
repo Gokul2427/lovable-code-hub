@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
-import { Activity, Search, Eye, FileText } from "lucide-react";
+import { Activity, Search, Eye, FileText, LayoutGrid, List as ListIcon } from "lucide-react";
 import { format } from "date-fns";
+import { useViewMode } from "@/hooks/useViewMode";
+
 
 interface AuditRow {
   id: string;
@@ -54,12 +56,31 @@ const labelFor = (row: AuditRow) => {
   );
 };
 
+const HIDDEN_KEYS = new Set(["id", "user_id", "created_at", "updated_at"]);
+
+const PrettyRecord = ({ data }: { data: Record<string, any> }) => {
+  const entries = Object.entries(data).filter(([k, v]) => !HIDDEN_KEYS.has(k) && v !== null && v !== "");
+  if (entries.length === 0) return <p className="text-xs text-muted-foreground p-3">No fields</p>;
+  return (
+    <div className="border rounded-lg divide-y">
+      {entries.map(([k, v]) => (
+        <div key={k} className="p-3 grid grid-cols-[160px_1fr] gap-3 text-xs items-start">
+          <div className="font-medium text-muted-foreground capitalize">{k.replace(/_/g, " ")}</div>
+          <div className="break-words">{formatVal(v)}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function AuditLogs() {
   const { user } = useAuth();
+  const { viewMode, setViewMode } = useViewMode("audit-logs");
   const [tableFilter, setTableFilter] = useState<string>("all");
   const [actionFilter, setActionFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<AuditRow | null>(null);
+
 
   const { data: logs, isLoading } = useQuery({
     queryKey: ["audit-logs", user?.id],
@@ -108,11 +129,16 @@ export default function AuditLogs() {
             Complete history of every create, update, and delete in your account.
           </p>
         </div>
+        <div className="flex gap-1 rounded-lg border p-0.5 self-start">
+          <Button size="sm" variant={viewMode === "list" ? "default" : "ghost"} onClick={() => setViewMode("list")} className="h-8 gap-1.5"><ListIcon className="h-3.5 w-3.5" /> List</Button>
+          <Button size="sm" variant={viewMode === "grid" ? "default" : "ghost"} onClick={() => setViewMode("grid")} className="h-8 gap-1.5"><LayoutGrid className="h-3.5 w-3.5" /> Grid</Button>
+        </div>
       </div>
 
       <Card>
         <CardContent className="p-3 flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
+
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by record, ID..."
@@ -159,6 +185,35 @@ export default function AuditLogs() {
             <div className="p-10 text-center text-muted-foreground text-sm">
               No audit activity yet.
             </div>
+          ) : viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-3">
+              {filtered.map((row) => (
+                <button
+                  key={row.id}
+                  onClick={() => setSelected(row)}
+                  className="text-left rounded-lg border p-3 hover:shadow-sm hover:bg-muted/40 transition-colors flex flex-col gap-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="outline" className={`${ACTION_COLORS[row.action]} shrink-0`}>
+                      {row.action === "INSERT" ? "Created" : row.action === "UPDATE" ? "Updated" : "Deleted"}
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground">
+                      {format(new Date(row.created_at), "dd MMM, HH:mm")}
+                    </span>
+                  </div>
+                  <div className="text-sm font-medium truncate">{labelFor(row)}</div>
+                  <div className="text-xs text-muted-foreground capitalize truncate">
+                    {row.table_name.replace(/_/g, " ")}
+                  </div>
+                  {row.action === "UPDATE" && row.changed_fields && (
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      Changed: {Object.keys(row.changed_fields).slice(0, 3).join(", ")}
+                      {Object.keys(row.changed_fields).length > 3 ? "…" : ""}
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           ) : (
             <div className="divide-y">
               {filtered.map((row) => (
@@ -194,6 +249,7 @@ export default function AuditLogs() {
               ))}
             </div>
           )}
+
         </CardContent>
       </Card>
 
@@ -249,20 +305,17 @@ export default function AuditLogs() {
                 {selected.action === "INSERT" && selected.new_data && (
                   <div>
                     <div className="font-semibold mb-2">Created with</div>
-                    <pre className="bg-muted rounded-lg p-3 text-[11px] overflow-auto max-h-80">
-                      {JSON.stringify(selected.new_data, null, 2)}
-                    </pre>
+                    <PrettyRecord data={selected.new_data} />
                   </div>
                 )}
 
                 {selected.action === "DELETE" && selected.old_data && (
                   <div>
                     <div className="font-semibold mb-2">Deleted data</div>
-                    <pre className="bg-muted rounded-lg p-3 text-[11px] overflow-auto max-h-80">
-                      {JSON.stringify(selected.old_data, null, 2)}
-                    </pre>
+                    <PrettyRecord data={selected.old_data} />
                   </div>
                 )}
+
               </div>
             )}
           </ScrollArea>

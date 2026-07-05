@@ -323,7 +323,8 @@ const PublicVehiclePage = () => {
           {(dealer?.dealer_phone || dealer?.whatsapp_number) && (
             <div className="hidden lg:flex gap-2">
               {dealer?.dealer_phone && (
-                <a href={`tel:${dealer.dealer_phone}`}>
+                <a href={`tel:${dealer.dealer_phone}`}
+                  onClick={() => trackPublicEvent({ eventType: "cta_call", dealerUserId: vehicle.user_id, publicPageId: dealer?.public_page_id || "", vehicleId: vehicle.id })}>
                   <Button variant="outline" size="sm" className="gap-2"><Phone className="h-4 w-4" /> Call</Button>
                 </a>
               )}
@@ -524,7 +525,8 @@ const PublicVehiclePage = () => {
                     {dealer.dealer_phone && (
                       <div className={`flex items-center gap-2 ${textSecondary}`}>
                         <Phone className={`h-4 w-4 ${accent.text}`} />
-                        <a href={`tel:${dealer.dealer_phone}`} className={`text-sm hover:${accent.text}`}>{dealer.dealer_phone}</a>
+                        <a href={`tel:${dealer.dealer_phone}`} className={`text-sm hover:${accent.text}`}
+                          onClick={() => trackPublicEvent({ eventType: "cta_call", dealerUserId: vehicle.user_id, publicPageId: dealer?.public_page_id || "", vehicleId: vehicle.id })}>{dealer.dealer_phone}</a>
                       </div>
                     )}
                     {dealer.dealer_email && (
@@ -670,7 +672,8 @@ const PublicVehiclePage = () => {
         {/* CTA Bar */}
         <div className="bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] px-4 py-3 flex items-center gap-3">
           {dealer?.dealer_phone && (
-            <a href={`tel:${dealer.dealer_phone}`} className="flex-1">
+            <a href={`tel:${dealer.dealer_phone}`} className="flex-1"
+              onClick={() => trackPublicEvent({ eventType: "cta_call", dealerUserId: vehicle.user_id, publicPageId: dealer?.public_page_id || "", vehicleId: vehicle.id })}>
               <Button variant="outline" className="w-full gap-2 h-11 font-semibold border-gray-300">
                 <Phone className="h-4 w-4" /> Call
               </Button>

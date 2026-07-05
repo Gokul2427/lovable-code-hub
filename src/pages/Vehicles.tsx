@@ -1553,7 +1553,7 @@ const reorderExistingImages = async (imgs: VehicleImage[], fromIdx: number, toId
                       {pendingImages.map((file, i) => (
                         <div key={i} className="relative">
                           <img src={URL.createObjectURL(file)} alt="" className="h-16 w-20 object-cover rounded" />
-                          <Button size="icon" variant="destructive" className="absolute -top-2 -right-2 h-5 w-5" onClick={() => removePendingImage(i)}>
+                          <Button type="button" size="icon" variant="destructive" className="absolute -top-2 -right-2 h-5 w-5" onClick={(e) => { e.preventDefault(); e.stopPropagation(); removePendingImage(i); }}>
                             <X className="h-3 w-3" />
                           </Button>
                         </div>
@@ -1671,10 +1671,11 @@ const reorderExistingImages = async (imgs: VehicleImage[], fromIdx: number, toId
     </Select>
 
     <Button
+      type="button"
       size="icon"
       variant="ghost"
       className="h-6 w-6"
-      onClick={() => removePendingDoc(i)}
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); removePendingDoc(i); }}
     >
       <X className="h-3 w-3" />
     </Button>
