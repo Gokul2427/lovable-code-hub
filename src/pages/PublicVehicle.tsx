@@ -672,7 +672,8 @@ const PublicVehiclePage = () => {
         {/* CTA Bar */}
         <div className="bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] px-4 py-3 flex items-center gap-3">
           {dealer?.dealer_phone && (
-            <a href={`tel:${dealer.dealer_phone}`} className="flex-1">
+            <a href={`tel:${dealer.dealer_phone}`} className="flex-1"
+              onClick={() => trackPublicEvent({ eventType: "cta_call", dealerUserId: vehicle.user_id, publicPageId: dealer?.public_page_id || "", vehicleId: vehicle.id })}>
               <Button variant="outline" className="w-full gap-2 h-11 font-semibold border-gray-300">
                 <Phone className="h-4 w-4" /> Call
               </Button>
