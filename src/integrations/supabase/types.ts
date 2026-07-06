@@ -647,6 +647,7 @@ export type Database = {
       }
       sales: {
         Row: {
+          additional_charges: Json
           amount_paid: number | null
           annual_interest_rate: number | null
           balance_amount: number | null
@@ -672,6 +673,7 @@ export type Database = {
           vehicle_id: string | null
         }
         Insert: {
+          additional_charges?: Json
           amount_paid?: number | null
           annual_interest_rate?: number | null
           balance_amount?: number | null
@@ -697,6 +699,7 @@ export type Database = {
           vehicle_id?: string | null
         }
         Update: {
+          additional_charges?: Json
           amount_paid?: number | null
           annual_interest_rate?: number | null
           balance_amount?: number | null
