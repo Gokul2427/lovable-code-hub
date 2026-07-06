@@ -201,7 +201,8 @@ if (amountPaid > totalAmount) {
           status: "completed",
           total_amount: totalAmount,
           balance_amount: balanceAmount,
-        }).eq("id", selectedSale.id);
+          additional_charges: additionalCharges.map(c => ({ name: c.name, amount: c.amount })) as any,
+        } as any).eq("id", selectedSale.id);
         if (error) throw error;
         
         await updateVehicleStatusFromSale(
@@ -220,6 +221,7 @@ if (amountPaid > totalAmount) {
           total_amount: totalAmount,
           balance_amount: balanceAmount,
           emi_configured: false,
+          additional_charges: additionalCharges.map(c => ({ name: c.name, amount: c.amount })) as any,
           user_id: user.id,
         } as SaleInsert]).select().single();
         if (error) throw error;
