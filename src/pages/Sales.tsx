@@ -201,7 +201,8 @@ if (amountPaid > totalAmount) {
           status: "completed",
           total_amount: totalAmount,
           balance_amount: balanceAmount,
-        }).eq("id", selectedSale.id);
+          additional_charges: additionalCharges.map(c => ({ name: c.name, amount: c.amount })) as any,
+        } as any).eq("id", selectedSale.id);
         if (error) throw error;
         
         await updateVehicleStatusFromSale(
@@ -220,6 +221,7 @@ if (amountPaid > totalAmount) {
           total_amount: totalAmount,
           balance_amount: balanceAmount,
           emi_configured: false,
+          additional_charges: additionalCharges.map(c => ({ name: c.name, amount: c.amount })) as any,
           user_id: user.id,
         } as SaleInsert]).select().single();
         if (error) throw error;
@@ -335,6 +337,19 @@ if (amountPaid > 0 && saleData) {
     down_payment: sale.down_payment?.toLocaleString("en-IN") || "",
     amount_paid: sale.amount_paid?.toLocaleString("en-IN") || "",
   });
+
+  // Rehydrate additional charges from the saved sale
+  const savedCharges = Array.isArray((sale as any).additional_charges)
+    ? (sale as any).additional_charges
+    : [];
+  setAdditionalCharges(
+    savedCharges.map((c: any) => ({
+      name: c?.name || "",
+      amount: Number(c?.amount) || 0,
+      display: (Number(c?.amount) || 0).toLocaleString("en-IN"),
+    }))
+  );
+  setEnableTax(!!(sale.tax_amount && sale.tax_amount > 0));
 
   setDialogOpen(true);
 };
@@ -509,30 +524,27 @@ const getPaymentBadgeColor = (status: string) => {
 
 
   const handleDownloadInvoice = async (sale: Sale) => {
+    try {
     const { data: { user } } = await supabase.auth.getUser();
 if (!user) {
-  toast({
-    title: "Error",
-    description: "User not authenticated",
-    variant: "destructive",
-  });
+  toast({ title: "Error", description: "User not authenticated", variant: "destructive" });
   return;
 }
 
-const { data: dealerSettings, error } = await supabase
+const { data: dealerSettings } = await supabase
   .from("settings")
   .select("dealer_name, dealer_address, dealer_phone, dealer_email, dealer_gst")
   .eq("user_id", user.id)
-  .single();
+  .maybeSingle();
 
-if (error || !dealerSettings) {
-  toast({
-    title: "Error",
-    description: "Dealer settings not found",
-    variant: "destructive",
-  });
-  return;
-}
+const dealer = {
+  dealer_name: dealerSettings?.dealer_name || "Your Dealership",
+  dealer_address: dealerSettings?.dealer_address || "",
+  dealer_phone: dealerSettings?.dealer_phone || "",
+  dealer_email: dealerSettings?.dealer_email || "",
+  dealer_gst: dealerSettings?.dealer_gst || "",
+};
+
 
     const vehicle = getVehicle(sale.vehicle_id);
     const customer = getCustomer(sale.customer_id);
@@ -560,17 +572,8 @@ const emiDueDay = emiStartDate
   ? new Date(emiStartDate).getDate()
   : undefined;
 
-  console.log("Dealer address used in PDF:", dealerSettings.dealer_address);
-
-
 generateSaleInvoicePDF(
-  {
-    dealer_name: dealerSettings.dealer_name,
-    dealer_address: dealerSettings.dealer_address, // ✅ FIX
-    dealer_phone: dealerSettings.dealer_phone,
-    dealer_email: dealerSettings.dealer_email,
-    dealer_gst: dealerSettings.dealer_gst,
-  },
+  dealer,
   vehicle,
   customer,
   {
@@ -591,8 +594,11 @@ generateSaleInvoicePDF(
   }
 );
 
-
     toast({ title: "Invoice downloaded successfully" });
+    } catch (err: any) {
+      console.error("Invoice download failed", err);
+      toast({ title: "Download failed", description: err?.message || "Could not generate invoice", variant: "destructive" });
+    }
   };
 
   const filteredSales = sales.filter((s) =>
@@ -1053,6 +1059,25 @@ const isEmiNotConfigured = (sale: Sale) => {
                     <p className="font-bold text-chart-2">{formatCurrency(selectedSale.total_amount)}</p>
                   </div>
                 </div>
+
+                {/* Additional Charges */}
+                {Array.isArray((selectedSale as any).additional_charges) && (selectedSale as any).additional_charges.length > 0 && (
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm font-medium mb-2">Additional Charges</p>
+                    <div className="space-y-1">
+                      {((selectedSale as any).additional_charges as any[]).map((c, i) => (
+                        <div key={i} className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">{c.name || `Charge ${i + 1}`}</span>
+                          <span className="font-medium">{formatCurrency(Number(c.amount) || 0)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between pt-2 mt-2 border-t text-sm font-semibold">
+                        <span>Total additional</span>
+                        <span>{formatCurrency(((selectedSale as any).additional_charges as any[]).reduce((s, c) => s + (Number(c.amount) || 0), 0))}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
   <div>
     <p className="text-sm text-muted-foreground">Down Payment</p>

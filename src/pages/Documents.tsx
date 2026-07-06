@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, Download, ExternalLink, FileText, Plus, Upload, Trash2, Search, Folder, FolderPlus, ChevronRight, Home as HomeIcon } from "lucide-react";
 import ViewToggle from "@/components/ViewToggle";
@@ -84,6 +85,12 @@ const Documents = () => {
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [pendingFolders, setPendingFolders] = useState<string[]>([]); // client-side folders (no files yet)
+
+  // In-app dialogs for rename / delete confirms
+  const [renameTarget, setRenameTarget] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [deleteFolderTarget, setDeleteFolderTarget] = useState<string | null>(null);
+  const [deleteDocTarget, setDeleteDocTarget] = useState<string | null>(null);
 
   // Add Document form state
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -173,7 +180,6 @@ const Documents = () => {
   };
 
   const handleDeleteDocument = async (docId: string) => {
-    if (!confirm("Delete this document?")) return;
     try {
       const { error } = await supabase.from("documents").delete().eq("id", docId);
       if (error) throw error;
@@ -239,14 +245,20 @@ const Documents = () => {
     toast({ title: "Folder created", description: full });
   };
 
-  const handleRenameFolder = async (oldPath: string) => {
-    const newName = window.prompt("Rename folder", oldPath.split("/").pop() || "");
-    if (!newName || !newName.trim()) return;
+  const openRenameFolder = (oldPath: string) => {
+    setRenameTarget(oldPath);
+    setRenameValue(oldPath.split("/").pop() || "");
+  };
+
+  const handleRenameFolder = async () => {
+    const oldPath = renameTarget;
+    if (!oldPath) return;
+    const newName = renameValue.trim();
+    if (!newName) return;
     const parent = oldPath.includes("/") ? oldPath.slice(0, oldPath.lastIndexOf("/")) : "";
-    const newPath = parent ? `${parent}/${newName.trim()}` : newName.trim();
-    if (newPath === oldPath) return;
+    const newPath = parent ? `${parent}/${newName}` : newName;
+    if (newPath === oldPath) { setRenameTarget(null); return; }
     try {
-      // Update every document whose folder_path starts with oldPath
       const affected = documents.filter((d: any) => {
         const fp = (d.folder_path as string) || "";
         return fp === oldPath || fp.startsWith(oldPath + "/");
@@ -261,23 +273,22 @@ const Documents = () => {
       toast({ title: "Folder renamed" });
     } catch (err: any) {
       toast({ title: "Rename failed", description: err.message, variant: "destructive" });
+    } finally {
+      setRenameTarget(null);
     }
   };
 
-  const handleDeleteFolder = async (path: string) => {
+  const handleDeleteFolder = async () => {
+    const path = deleteFolderTarget;
+    if (!path) return;
     const affected = documents.filter((d: any) => {
       const fp = (d.folder_path as string) || "";
       return fp === path || fp.startsWith(path + "/");
     });
-    const msg = affected.length
-      ? `Delete folder "${path}" and move ${affected.length} file(s) to the parent folder?`
-      : `Delete empty folder "${path}"?`;
-    if (!window.confirm(msg)) return;
     try {
       const parent = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
       await Promise.all(affected.map((d: any) => {
         const fp = (d.folder_path as string) || "";
-        // Move to parent, keeping any nested sub-structure below the deleted folder
         const rest = fp === path ? "" : fp.slice(path.length + 1);
         const updated = parent ? (rest ? `${parent}/${rest}` : parent) : rest;
         return supabase.from("documents").update({ folder_path: updated } as any).eq("id", d.id);
@@ -287,6 +298,8 @@ const Documents = () => {
       toast({ title: "Folder deleted", description: affected.length ? `${affected.length} file(s) moved` : undefined });
     } catch (err: any) {
       toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    } finally {
+      setDeleteFolderTarget(null);
     }
   };
 
@@ -401,14 +414,14 @@ const Documents = () => {
                   <Button
                     type="button" size="icon" variant="ghost" className="h-6 w-6"
                     title="Rename folder"
-                    onClick={(e) => { e.stopPropagation(); handleRenameFolder(fullPath); }}
+                    onClick={(e) => { e.stopPropagation(); openRenameFolder(fullPath); }}
                   >
                     <FileText className="h-3 w-3" />
                   </Button>
                   <Button
                     type="button" size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive"
                     title="Delete folder"
-                    onClick={(e) => { e.stopPropagation(); handleDeleteFolder(fullPath); }}
+                    onClick={(e) => { e.stopPropagation(); setDeleteFolderTarget(fullPath); }}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -450,7 +463,7 @@ const Documents = () => {
                     <TableCell className="text-sm text-muted-foreground">{format(new Date(d.created_at), "dd MMM yyyy")}</TableCell>
                     <TableCell><Badge className={getStatusColor(d.status)}>{d.status}</Badge></TableCell>
                     <TableCell>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteDocument(d.id); }} className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" title="Delete">
+                      <button onClick={(e) => { e.stopPropagation(); setDeleteDocTarget(d.id); }} className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" title="Delete">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </TableCell>
@@ -470,7 +483,7 @@ const Documents = () => {
                   <div className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
                     <p className="font-medium text-foreground truncate flex-1">{d.document_name}</p>
-                    <button onClick={(e) => { e.stopPropagation(); handleDeleteDocument(d.id); }} className="p-1 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0" title="Delete">
+                    <button onClick={(e) => { e.stopPropagation(); setDeleteDocTarget(d.id); }} className="p-1 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0" title="Delete">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -598,6 +611,50 @@ const Documents = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Rename Folder Dialog */}
+      <Dialog open={!!renameTarget} onOpenChange={(o) => !o && setRenameTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Rename Folder</DialogTitle>
+            <DialogDescription>Renaming <b>{renameTarget}</b></DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>New name</Label>
+            <Input
+              autoFocus
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleRenameFolder(); }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameTarget(null)}>Cancel</Button>
+            <Button onClick={handleRenameFolder} disabled={!renameValue.trim()}>Rename</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Folder Confirm */}
+      <DeleteConfirmDialog
+        open={!!deleteFolderTarget}
+        onOpenChange={(o) => !o && setDeleteFolderTarget(null)}
+        onConfirm={handleDeleteFolder}
+        title={`Delete folder "${deleteFolderTarget || ""}"?`}
+        description="Files inside will be moved to the parent folder. This cannot be undone."
+      />
+
+      {/* Delete Document Confirm */}
+      <DeleteConfirmDialog
+        open={!!deleteDocTarget}
+        onOpenChange={(o) => !o && setDeleteDocTarget(null)}
+        onConfirm={async () => {
+          if (deleteDocTarget) await handleDeleteDocument(deleteDocTarget);
+          setDeleteDocTarget(null);
+        }}
+        title="Delete this document?"
+        description="This will permanently remove the document. This cannot be undone."
+      />
     </div>
   );
 };
