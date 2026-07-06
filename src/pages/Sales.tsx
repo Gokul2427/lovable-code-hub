@@ -511,30 +511,27 @@ const getPaymentBadgeColor = (status: string) => {
 
 
   const handleDownloadInvoice = async (sale: Sale) => {
+    try {
     const { data: { user } } = await supabase.auth.getUser();
 if (!user) {
-  toast({
-    title: "Error",
-    description: "User not authenticated",
-    variant: "destructive",
-  });
+  toast({ title: "Error", description: "User not authenticated", variant: "destructive" });
   return;
 }
 
-const { data: dealerSettings, error } = await supabase
+const { data: dealerSettings } = await supabase
   .from("settings")
   .select("dealer_name, dealer_address, dealer_phone, dealer_email, dealer_gst")
   .eq("user_id", user.id)
-  .single();
+  .maybeSingle();
 
-if (error || !dealerSettings) {
-  toast({
-    title: "Error",
-    description: "Dealer settings not found",
-    variant: "destructive",
-  });
-  return;
-}
+const dealer = {
+  dealer_name: dealerSettings?.dealer_name || "Your Dealership",
+  dealer_address: dealerSettings?.dealer_address || "",
+  dealer_phone: dealerSettings?.dealer_phone || "",
+  dealer_email: dealerSettings?.dealer_email || "",
+  dealer_gst: dealerSettings?.dealer_gst || "",
+};
+
 
     const vehicle = getVehicle(sale.vehicle_id);
     const customer = getCustomer(sale.customer_id);
