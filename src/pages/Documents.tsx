@@ -278,20 +278,17 @@ const Documents = () => {
     }
   };
 
-  const handleDeleteFolder = async (path: string) => {
+  const handleDeleteFolder = async () => {
+    const path = deleteFolderTarget;
+    if (!path) return;
     const affected = documents.filter((d: any) => {
       const fp = (d.folder_path as string) || "";
       return fp === path || fp.startsWith(path + "/");
     });
-    const msg = affected.length
-      ? `Delete folder "${path}" and move ${affected.length} file(s) to the parent folder?`
-      : `Delete empty folder "${path}"?`;
-    if (!window.confirm(msg)) return;
     try {
       const parent = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
       await Promise.all(affected.map((d: any) => {
         const fp = (d.folder_path as string) || "";
-        // Move to parent, keeping any nested sub-structure below the deleted folder
         const rest = fp === path ? "" : fp.slice(path.length + 1);
         const updated = parent ? (rest ? `${parent}/${rest}` : parent) : rest;
         return supabase.from("documents").update({ folder_path: updated } as any).eq("id", d.id);
@@ -301,6 +298,8 @@ const Documents = () => {
       toast({ title: "Folder deleted", description: affected.length ? `${affected.length} file(s) moved` : undefined });
     } catch (err: any) {
       toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    } finally {
+      setDeleteFolderTarget(null);
     }
   };
 
