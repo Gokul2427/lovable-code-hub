@@ -421,7 +421,7 @@ const Documents = () => {
                   <Button
                     type="button" size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive"
                     title="Delete folder"
-                    onClick={(e) => { e.stopPropagation(); handleDeleteFolder(fullPath); }}
+                    onClick={(e) => { e.stopPropagation(); setDeleteFolderTarget(fullPath); }}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
