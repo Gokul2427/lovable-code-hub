@@ -338,6 +338,19 @@ if (amountPaid > 0 && saleData) {
     amount_paid: sale.amount_paid?.toLocaleString("en-IN") || "",
   });
 
+  // Rehydrate additional charges from the saved sale
+  const savedCharges = Array.isArray((sale as any).additional_charges)
+    ? (sale as any).additional_charges
+    : [];
+  setAdditionalCharges(
+    savedCharges.map((c: any) => ({
+      name: c?.name || "",
+      amount: Number(c?.amount) || 0,
+      display: (Number(c?.amount) || 0).toLocaleString("en-IN"),
+    }))
+  );
+  setEnableTax(!!(sale.tax_amount && sale.tax_amount > 0));
+
   setDialogOpen(true);
 };
 
