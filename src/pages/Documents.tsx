@@ -414,7 +414,7 @@ const Documents = () => {
                   <Button
                     type="button" size="icon" variant="ghost" className="h-6 w-6"
                     title="Rename folder"
-                    onClick={(e) => { e.stopPropagation(); handleRenameFolder(fullPath); }}
+                    onClick={(e) => { e.stopPropagation(); openRenameFolder(fullPath); }}
                   >
                     <FileText className="h-3 w-3" />
                   </Button>
