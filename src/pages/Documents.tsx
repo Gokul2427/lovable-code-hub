@@ -611,6 +611,50 @@ const Documents = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Rename Folder Dialog */}
+      <Dialog open={!!renameTarget} onOpenChange={(o) => !o && setRenameTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Rename Folder</DialogTitle>
+            <DialogDescription>Renaming <b>{renameTarget}</b></DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>New name</Label>
+            <Input
+              autoFocus
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleRenameFolder(); }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameTarget(null)}>Cancel</Button>
+            <Button onClick={handleRenameFolder} disabled={!renameValue.trim()}>Rename</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Folder Confirm */}
+      <DeleteConfirmDialog
+        open={!!deleteFolderTarget}
+        onOpenChange={(o) => !o && setDeleteFolderTarget(null)}
+        onConfirm={handleDeleteFolder}
+        title={`Delete folder "${deleteFolderTarget || ""}"?`}
+        description="Files inside will be moved to the parent folder. This cannot be undone."
+      />
+
+      {/* Delete Document Confirm */}
+      <DeleteConfirmDialog
+        open={!!deleteDocTarget}
+        onOpenChange={(o) => !o && setDeleteDocTarget(null)}
+        onConfirm={async () => {
+          if (deleteDocTarget) await handleDeleteDocument(deleteDocTarget);
+          setDeleteDocTarget(null);
+        }}
+        title="Delete this document?"
+        description="This will permanently remove the document. This cannot be undone."
+      />
     </div>
   );
 };
