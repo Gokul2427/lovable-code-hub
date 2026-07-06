@@ -1059,6 +1059,25 @@ const isEmiNotConfigured = (sale: Sale) => {
                     <p className="font-bold text-chart-2">{formatCurrency(selectedSale.total_amount)}</p>
                   </div>
                 </div>
+
+                {/* Additional Charges */}
+                {Array.isArray((selectedSale as any).additional_charges) && (selectedSale as any).additional_charges.length > 0 && (
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm font-medium mb-2">Additional Charges</p>
+                    <div className="space-y-1">
+                      {((selectedSale as any).additional_charges as any[]).map((c, i) => (
+                        <div key={i} className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">{c.name || `Charge ${i + 1}`}</span>
+                          <span className="font-medium">{formatCurrency(Number(c.amount) || 0)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between pt-2 mt-2 border-t text-sm font-semibold">
+                        <span>Total additional</span>
+                        <span>{formatCurrency(((selectedSale as any).additional_charges as any[]).reduce((s, c) => s + (Number(c.amount) || 0), 0))}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
   <div>
     <p className="text-sm text-muted-foreground">Down Payment</p>
