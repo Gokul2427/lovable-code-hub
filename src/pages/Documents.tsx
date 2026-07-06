@@ -245,14 +245,20 @@ const Documents = () => {
     toast({ title: "Folder created", description: full });
   };
 
-  const handleRenameFolder = async (oldPath: string) => {
-    const newName = window.prompt("Rename folder", oldPath.split("/").pop() || "");
-    if (!newName || !newName.trim()) return;
+  const openRenameFolder = (oldPath: string) => {
+    setRenameTarget(oldPath);
+    setRenameValue(oldPath.split("/").pop() || "");
+  };
+
+  const handleRenameFolder = async () => {
+    const oldPath = renameTarget;
+    if (!oldPath) return;
+    const newName = renameValue.trim();
+    if (!newName) return;
     const parent = oldPath.includes("/") ? oldPath.slice(0, oldPath.lastIndexOf("/")) : "";
-    const newPath = parent ? `${parent}/${newName.trim()}` : newName.trim();
-    if (newPath === oldPath) return;
+    const newPath = parent ? `${parent}/${newName}` : newName;
+    if (newPath === oldPath) { setRenameTarget(null); return; }
     try {
-      // Update every document whose folder_path starts with oldPath
       const affected = documents.filter((d: any) => {
         const fp = (d.folder_path as string) || "";
         return fp === oldPath || fp.startsWith(oldPath + "/");
@@ -267,6 +273,8 @@ const Documents = () => {
       toast({ title: "Folder renamed" });
     } catch (err: any) {
       toast({ title: "Rename failed", description: err.message, variant: "destructive" });
+    } finally {
+      setRenameTarget(null);
     }
   };
 
