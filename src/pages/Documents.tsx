@@ -180,7 +180,6 @@ const Documents = () => {
   };
 
   const handleDeleteDocument = async (docId: string) => {
-    if (!confirm("Delete this document?")) return;
     try {
       const { error } = await supabase.from("documents").delete().eq("id", docId);
       if (error) throw error;
