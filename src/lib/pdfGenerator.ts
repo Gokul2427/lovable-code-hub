@@ -81,10 +81,8 @@ doc.setTextColor(255, 255, 255);
 // Dealer name
 doc.setFont('helvetica', 'bold');
 doc.setFontSize(18);
-if (!dealer.dealer_name) {
-  throw new Error('Dealer name is required for invoice');
-}
-doc.text(dealer.dealer_name, pageWidth / 2, 14, { align: 'center' });
+const dealerName = dealer.dealer_name || 'Your Dealership';
+doc.text(dealerName, pageWidth / 2, 14, { align: 'center' });
 
 // Phone + Email
 doc.setFont('helvetica', 'normal');
