@@ -86,6 +86,12 @@ const Documents = () => {
   const [newFolderName, setNewFolderName] = useState("");
   const [pendingFolders, setPendingFolders] = useState<string[]>([]); // client-side folders (no files yet)
 
+  // In-app dialogs for rename / delete confirms
+  const [renameTarget, setRenameTarget] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [deleteFolderTarget, setDeleteFolderTarget] = useState<string | null>(null);
+  const [deleteDocTarget, setDeleteDocTarget] = useState<string | null>(null);
+
   // Add Document form state
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addForm, setAddForm] = useState({
