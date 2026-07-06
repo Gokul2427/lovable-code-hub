@@ -559,17 +559,8 @@ const emiDueDay = emiStartDate
   ? new Date(emiStartDate).getDate()
   : undefined;
 
-  console.log("Dealer address used in PDF:", dealerSettings.dealer_address);
-
-
 generateSaleInvoicePDF(
-  {
-    dealer_name: dealerSettings.dealer_name,
-    dealer_address: dealerSettings.dealer_address, // ✅ FIX
-    dealer_phone: dealerSettings.dealer_phone,
-    dealer_email: dealerSettings.dealer_email,
-    dealer_gst: dealerSettings.dealer_gst,
-  },
+  dealer,
   vehicle,
   customer,
   {
@@ -590,8 +581,11 @@ generateSaleInvoicePDF(
   }
 );
 
-
     toast({ title: "Invoice downloaded successfully" });
+    } catch (err: any) {
+      console.error("Invoice download failed", err);
+      toast({ title: "Download failed", description: err?.message || "Could not generate invoice", variant: "destructive" });
+    }
   };
 
   const filteredSales = sales.filter((s) =>
