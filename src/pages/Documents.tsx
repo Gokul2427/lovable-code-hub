@@ -463,7 +463,7 @@ const Documents = () => {
                     <TableCell className="text-sm text-muted-foreground">{format(new Date(d.created_at), "dd MMM yyyy")}</TableCell>
                     <TableCell><Badge className={getStatusColor(d.status)}>{d.status}</Badge></TableCell>
                     <TableCell>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteDocument(d.id); }} className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" title="Delete">
+                      <button onClick={(e) => { e.stopPropagation(); setDeleteDocTarget(d.id); }} className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" title="Delete">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </TableCell>
@@ -483,7 +483,7 @@ const Documents = () => {
                   <div className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
                     <p className="font-medium text-foreground truncate flex-1">{d.document_name}</p>
-                    <button onClick={(e) => { e.stopPropagation(); handleDeleteDocument(d.id); }} className="p-1 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0" title="Delete">
+                    <button onClick={(e) => { e.stopPropagation(); setDeleteDocTarget(d.id); }} className="p-1 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0" title="Delete">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
